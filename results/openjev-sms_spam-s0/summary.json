@@ -12,26 +12,26 @@
   "complete": true,
   "raw": {
     "accuracy": 0.8766666666666667,
-    "nll": 0.430072214661278,
-    "brier": 0.22357248275656777,
-    "ece": 0.08075765937570561,
+    "nll": 0.2426707241054953,
+    "brier": 0.15182371652731058,
+    "ece": 0.04063356317185744,
     "n": 300,
-    "auroc": 0.6109341280443942
+    "auroc": 0.9045319083341897
   },
   "calibrated": {
-    "accuracy": 0.8766666666666667,
-    "nll": 0.3685247124068126,
-    "brier": 0.21393548621938815,
-    "ece": 0.031224085095927397,
+    "accuracy": 0.89,
+    "nll": 0.2690093309862042,
+    "brier": 0.15930007621081008,
+    "ece": 0.08763933525396671,
     "n": 300,
-    "auroc": 0.6109341280443942
+    "auroc": 0.9045319083341897
   },
   "calibrator": {
     "choice_T": 1.0,
     "choice_two_stage_T": 1.0,
     "score_T": 1.0,
-    "noul_a": 0.18080983989871535,
-    "noul_b": -1.1582361498521845,
+    "noul_a": 0.4848289728466796,
+    "noul_b": -0.6322145733172503,
     "meta": {
       "run_id": "openjev-sms_spam-s0",
       "n": 300,
@@ -40,11 +40,11 @@
     }
   },
   "latency_ms": {
-    "p50": 16.611416499472398,
-    "p95": 17.794577450422366,
-    "mean": 16.66405605333542
+    "p50": 16.66277749973233,
+    "p95": 17.991909850388765,
+    "mean": 16.763163916584745
   },
-  "prompt_tokens_mean": 36.82666666666667,
+  "prompt_tokens_mean": 61.82666666666667,
   "truncated": 0,
   "stages": {
     "nli": 300
@@ -102,57 +102,57 @@
     {
       "lo": 0.4666666666666667,
       "hi": 0.5333333333333333,
-      "count": 0,
-      "confidence": null,
-      "accuracy": null
+      "count": 6,
+      "confidence": 0.5167704853085788,
+      "accuracy": 0.5
     },
     {
       "lo": 0.5333333333333333,
       "hi": 0.6,
-      "count": 0,
-      "confidence": null,
-      "accuracy": null
+      "count": 7,
+      "confidence": 0.5696750038033616,
+      "accuracy": 0.8571428571428571
     },
     {
       "lo": 0.6,
       "hi": 0.6666666666666666,
-      "count": 0,
-      "confidence": null,
-      "accuracy": null
+      "count": 19,
+      "confidence": 0.6316849902854282,
+      "accuracy": 0.5263157894736842
     },
     {
       "lo": 0.6666666666666666,
       "hi": 0.7333333333333333,
-      "count": 0,
-      "confidence": null,
-      "accuracy": null
+      "count": 24,
+      "confidence": 0.6993184879354232,
+      "accuracy": 0.5
     },
     {
       "lo": 0.7333333333333333,
       "hi": 0.8,
-      "count": 8,
-      "confidence": 0.7944207092451006,
-      "accuracy": 0.625
+      "count": 34,
+      "confidence": 0.7630032082310977,
+      "accuracy": 0.8823529411764706
     },
     {
       "lo": 0.8,
       "hi": 0.8666666666666667,
-      "count": 194,
-      "confidence": 0.842390835787117,
-      "accuracy": 0.8505154639175257
+      "count": 45,
+      "confidence": 0.8370242148791732,
+      "accuracy": 0.9555555555555556
     },
     {
       "lo": 0.8666666666666667,
       "hi": 0.9333333333333333,
-      "count": 97,
-      "confidence": 0.8826771153429088,
-      "accuracy": 0.9484536082474226
+      "count": 68,
+      "confidence": 0.9015450782727173,
+      "accuracy": 0.9705882352941176
     },
     {
       "lo": 0.9333333333333333,
       "hi": 1.0,
-      "count": 1,
-      "confidence": 0.9446378142197158,
+      "count": 97,
+      "confidence": 0.9659122862159415,
       "accuracy": 1.0
     }
   ],
@@ -171,9 +171,9 @@
     "template": "Premise: {premise}\nHypothesis: {hypothesis}",
     "max_tokens": 4096,
     "prefix_sharing": true,
-    "load_seconds": 5.72,
+    "load_seconds": 3.05,
     "mps_cpu_solve": false,
-    "requests": 1376,
+    "requests": 601,
     "errors": 0,
     "truncations": 0,
     "name": "openjev-nli",

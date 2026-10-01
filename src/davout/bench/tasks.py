@@ -175,7 +175,13 @@ TASKS: dict[str, TaskSpec] = {
             shots_split="train",
             calib_split="train",
             test_split="train",
-            question=NoulQuestion("The message is spam.", None),
+            question=NoulQuestion(
+                "Is this text message spam?",
+                {
+                    "true": "an unsolicited advertisement, prize or scam offer, or promotional message",
+                    "false": "an ordinary personal message",
+                },
+            ),
             to_example=_sms_spam,
             columns=("sms", "label"),
             label_column="label",

@@ -16,10 +16,10 @@
 | hrm-boolq-task5-causal-s0 | hrm | boolq | noul | task-5 | causal | 300 | 0.557 → 0.663 | 0.072 → 0.063 | 0.687 → 0.614 | 0.425 | 0.655 | – | 82 | 96 | 1252 |
 | hrm-boolq-task5-prefix-s0 | hrm | boolq | noul | task-5 | prefix | 300 | 0.833 → 0.877 | 0.059 → 0.059 | 0.381 → 0.337 | 0.203 | 0.925 | – | 100 | 114 | 1252 |
 | hrm-boolq-zero-prefix-s0 | hrm | boolq | noul | zero | prefix | 300 | 0.837 → 0.873 | 0.080 → 0.048 | 0.396 → 0.322 | 0.198 | 0.930 | – | 32 | 42 | 205 |
-| hrm-sms_spam-generic3-prefix-s0 | hrm | sms_spam | noul | generic-3 | prefix | 300 | 0.850 → 0.877 | 0.065 → 0.050 | 0.402 → 0.363 | 0.211 | 0.647 | – | 33 | 36 | 230 |
-| hrm-sms_spam-task5-causal-s0 | hrm | sms_spam | noul | task-5 | causal | 300 | 0.353 → 0.877 | 0.187 → 0.051 | 0.724 → 0.322 | 0.189 | 0.802 | – | 37 | 39 | 393 |
-| hrm-sms_spam-task5-prefix-s0 | hrm | sms_spam | noul | task-5 | prefix | 300 | 0.863 → 0.867 | 0.093 → 0.061 | 0.371 → 0.343 | 0.197 | 0.722 | – | 42 | 44 | 393 |
-| hrm-sms_spam-zero-prefix-s0 | hrm | sms_spam | noul | zero | prefix | 300 | 0.867 → 0.877 | 0.066 → 0.026 | 0.395 → 0.372 | 0.216 | 0.571 | – | 26 | 27 | 57 |
+| hrm-sms_spam-generic3-prefix-s0 | hrm | sms_spam | noul | generic-3 | prefix | 300 | 0.910 → 0.903 | 0.051 → 0.038 | 0.220 → 0.197 | 0.120 | 0.941 | – | 32 | 35 | 241 |
+| hrm-sms_spam-task5-causal-s0 | hrm | sms_spam | noul | task-5 | causal | 300 | 0.847 → 0.877 | 0.292 → 0.024 | 0.616 → 0.373 | 0.216 | 0.578 | – | 44 | 44 | 459 |
+| hrm-sms_spam-task5-prefix-s0 | hrm | sms_spam | noul | task-5 | prefix | 300 | 0.907 → 0.947 | 0.069 → 0.037 | 0.206 → 0.140 | 0.085 | 0.975 | – | 49 | 49 | 459 |
+| hrm-sms_spam-zero-prefix-s0 | hrm | sms_spam | noul | zero | prefix | 300 | 0.910 → 0.933 | 0.056 → 0.042 | 0.189 → 0.151 | 0.090 | 0.971 | – | 26 | 27 | 68 |
 | hrm-sst2-generic3-prefix-s0 | hrm | sst2 | noul | generic-3 | prefix | 300 | 0.887 → 0.887 | 0.023 → 0.028 | 0.289 → 0.281 | 0.169 | 0.951 | – | 33 | 33 | 231 |
 | hrm-sst2-task5-causal-s0 | hrm | sst2 | noul | task-5 | causal | 300 | 0.830 → 0.833 | 0.249 → 0.047 | 0.577 → 0.418 | 0.257 | 0.901 | – | 32 | 36 | 313 |
 | hrm-sst2-task5-prefix-s0 | hrm | sst2 | noul | task-5 | prefix | 300 | 0.907 → 0.903 | 0.021 → 0.029 | 0.249 → 0.246 | 0.146 | 0.962 | – | 36 | 41 | 313 |
@@ -31,7 +31,7 @@
 | openjev-ag_news-s0 | openjev | ag_news | choice | – | – | 300 | 0.830 → 0.830 | 0.097 → 0.096 | 0.568 → 0.564 | 0.284 | – | – | 32 | 33 | 347 |
 | openjev-banking77-s0 | openjev | banking77 | choice | – | – | 300 | 0.730 → 0.730 | 0.313 → 0.155 | 1.255 → 1.190 | 0.455 | – | – | 113 | 117 | 3222 |
 | openjev-boolq-s0 | openjev | boolq | noul | – | – | 300 | 0.747 → 0.723 | 0.166 → 0.054 | 0.633 → 0.532 | 0.353 | 0.794 | – | 19 | 22 | 183 |
-| openjev-sms_spam-s0 | openjev | sms_spam | noul | – | – | 300 | 0.877 → 0.877 | 0.081 → 0.031 | 0.430 → 0.369 | 0.214 | 0.611 | – | 17 | 18 | 37 |
+| openjev-sms_spam-s0 | openjev | sms_spam | noul | – | – | 300 | 0.877 → 0.890 | 0.041 → 0.088 | 0.243 → 0.269 | 0.159 | 0.905 | – | 17 | 18 | 62 |
 | openjev-sst2-s0 | openjev | sst2 | noul | – | – | 300 | 0.773 → 0.813 | 0.136 → 0.029 | 0.643 → 0.436 | 0.277 | 0.881 | – | 16 | 17 | 37 |
 | openjev-yelp-s0 | openjev | yelp | score | – | – | 300 | 0.393 → 0.393 | 0.200 → 0.064 | 1.493 → 1.319 | 0.696 | – | 0.692 | 34 | 39 | 959 |
 
@@ -57,14 +57,14 @@ Metrics are computed on each run's test split. "raw" uses the scorer's logits as
 | hrm-boolq-task5-prefix-s0 | 2 of 2 | 0.833 → 0.877 | 0.059 → 0.059 | 0.381 → 0.337 | 1.000 |
 | hrm-boolq-zero-prefix-s0 | 1 of 2 | 0.660 → 0.660 | 0.097 → 0.068 | 0.660 → 0.651 | 0.597 |
 | hrm-boolq-zero-prefix-s0 | 2 of 2 | 0.837 → 0.873 | 0.080 → 0.048 | 0.396 → 0.322 | 1.000 |
-| hrm-sms_spam-generic3-prefix-s0 | 1 of 2 | 0.120 → 0.877 | 0.424 → 0.034 | 0.766 → 0.368 | 0.063 |
-| hrm-sms_spam-generic3-prefix-s0 | 2 of 2 | 0.850 → 0.877 | 0.065 → 0.050 | 0.402 → 0.363 | 1.000 |
-| hrm-sms_spam-task5-causal-s0 | 1 of 2 | 0.477 → 0.887 | 0.040 → 0.044 | 0.696 → 0.281 | 0.623 |
-| hrm-sms_spam-task5-causal-s0 | 2 of 2 | 0.353 → 0.877 | 0.187 → 0.051 | 0.724 → 0.322 | 1.000 |
-| hrm-sms_spam-task5-prefix-s0 | 1 of 2 | 0.223 → 0.877 | 0.298 → 0.024 | 0.724 → 0.379 | 0.120 |
-| hrm-sms_spam-task5-prefix-s0 | 2 of 2 | 0.863 → 0.867 | 0.093 → 0.061 | 0.371 → 0.343 | 1.000 |
-| hrm-sms_spam-zero-prefix-s0 | 1 of 2 | 0.130 → 0.877 | 0.427 → 0.024 | 0.793 → 0.375 | 0.030 |
-| hrm-sms_spam-zero-prefix-s0 | 2 of 2 | 0.867 → 0.877 | 0.066 → 0.026 | 0.395 → 0.372 | 1.000 |
+| hrm-sms_spam-generic3-prefix-s0 | 1 of 2 | 0.663 → 0.877 | 0.150 → 0.032 | 0.680 → 0.382 | 0.693 |
+| hrm-sms_spam-generic3-prefix-s0 | 2 of 2 | 0.910 → 0.903 | 0.051 → 0.038 | 0.220 → 0.197 | 1.000 |
+| hrm-sms_spam-task5-causal-s0 | 1 of 2 | 0.123 → 0.877 | 0.434 → 0.034 | 0.792 → 0.350 | 0.050 |
+| hrm-sms_spam-task5-causal-s0 | 2 of 2 | 0.847 → 0.877 | 0.292 → 0.024 | 0.616 → 0.373 | 1.000 |
+| hrm-sms_spam-task5-prefix-s0 | 1 of 2 | 0.580 → 0.870 | 0.064 → 0.064 | 0.686 → 0.336 | 0.667 |
+| hrm-sms_spam-task5-prefix-s0 | 2 of 2 | 0.907 → 0.947 | 0.069 → 0.037 | 0.206 → 0.140 | 1.000 |
+| hrm-sms_spam-zero-prefix-s0 | 1 of 2 | 0.150 → 0.877 | 0.408 → 0.020 | 0.787 → 0.379 | 0.067 |
+| hrm-sms_spam-zero-prefix-s0 | 2 of 2 | 0.910 → 0.933 | 0.056 → 0.042 | 0.189 → 0.151 | 1.000 |
 | hrm-sst2-generic3-prefix-s0 | 1 of 2 | 0.520 → 0.480 | 0.012 → 0.066 | 0.694 → 0.700 | 0.520 |
 | hrm-sst2-generic3-prefix-s0 | 2 of 2 | 0.887 → 0.887 | 0.023 → 0.028 | 0.289 → 0.281 | 1.000 |
 | hrm-sst2-task5-causal-s0 | 1 of 2 | 0.520 → 0.517 | 0.057 → 0.024 | 0.697 → 0.691 | 0.510 |

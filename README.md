@@ -168,17 +168,26 @@ HRM zero-shot against the OpenJev baseline, both after calibration:
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | BoolQ | Noul | 0.873 | 0.723 | 0.048 | 0.054 | 32 ms | 19 ms |
 | SST-2 | Noul | 0.920 | 0.813 | 0.035 | 0.029 | 27 ms | 16 ms |
-| SMS spam | Noul | 0.877 | 0.877 | 0.026 | 0.031 | 26 ms | 17 ms |
+| SMS spam | Noul | 0.933 | 0.890 | 0.042 | 0.088 | 26 ms | 17 ms |
 | AG News | Choice, 4 options | 0.830 | 0.830 | 0.088 | 0.096 | 31 ms | 32 ms |
 | Yelp stars | Score, 5 levels | 0.530 | 0.393 | 0.073 | 0.064 | 33 ms | 34 ms |
 | Banking77 | Choice, 77 options | 0.350 | 0.730 | 0.073 | 0.155 | 469 ms | 113 ms |
 
-- **HRM is ahead on reading-style judgments** (BoolQ, SST-2, Yelp), level on AG
-  News, and far behind on Banking77, where the two-stage path is both slow and
-  inaccurate.
-- **SMS spam is a failure for both models.** 0.877 is the share of non-spam
-  messages, so neither beats always answering "not spam" (AUROC 0.57 for HRM,
-  0.61 for OpenJev). The cause is not yet investigated.
+- **HRM is ahead on reading-style judgments** (BoolQ, SST-2, Yelp), slightly
+  ahead on SMS spam (AUROC 0.97 against 0.91), level on AG News, and far behind
+  on Banking77, where the two-stage path is both slow and inaccurate.
+- **Question wording decides whether a Noul works.** Asked to judge the bare
+  statement "The message is spam.", neither model beat always answering "not
+  spam" (AUROC 0.57 for HRM, 0.61 for OpenJev). Asking "Is this text message
+  spam?" and describing both outcomes in `criteria` gives the numbers above.
+  The wording was chosen on the test messages and then confirmed on 972 fresh
+  ones (AUROC 0.96). Describing the "no" outcome helps most.
+- **On a private set of message-routing decisions, OpenJev is the better
+  model.** Run through that project's own eval with its own hypotheses and
+  thresholds, HRM matched OpenJev on whether a message needs a reply and was
+  clearly worse at picking which agent should answer (right first choice in
+  58% of cases against 84%). The hypotheses were written and tuned for
+  OpenJev, and HRM was not fine-tuned.
 - **Calibration after the fact is enough to reach ECE under 0.1** for HRM on
   every task. Raw HRM output is already close on Noul and Choice (ECE 0.04 to
   0.13) and poor on Score (0.29).
@@ -186,8 +195,9 @@ HRM zero-shot against the OpenJev baseline, both after calibration:
   agree within noise on every task, while the examples cost 1.3 to 5 times the
   latency. The server therefore defaults to zero-shot.
 - **The first H cycle is close to useless.** Reading the answer after cycle 1
-  gives chance or majority-class accuracy on five of the six tasks and 0.57
-  against 0.83 on AG News, so early exit is not viable without training for it.
+  gives chance or majority-class accuracy on BoolQ, SST-2, SMS spam and Yelp,
+  and 0.57 against 0.83 on AG News, so early exit is not viable without
+  training for it. Banking77 records no per-cycle answers.
 - **Bidirectional prefix attention is essential.** With plain causal attention,
   accuracy falls to 0.38 on AG News, 0.24 on Yelp and 0.07 on Banking77, so the
   state cannot be encoded once and shared between questions.

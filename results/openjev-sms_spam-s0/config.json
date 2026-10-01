@@ -39,16 +39,16 @@
     "template": "Premise: {premise}\nHypothesis: {hypothesis}",
     "max_tokens": 4096,
     "prefix_sharing": true,
-    "load_seconds": 5.72,
+    "load_seconds": 3.05,
     "mps_cpu_solve": false,
-    "requests": 1376,
+    "requests": 601,
     "errors": 0,
     "truncations": 0,
     "name": "openjev-nli",
     "url": "http://127.0.0.1:8765"
   },
   "davout_version": "0.1.0",
-  "created_utc": "2026-10-01T11:46:56+00:00",
-  "updated_utc": "2026-10-01T11:47:06+00:00",
+  "created_utc": "2026-10-01T13:42:58+00:00",
+  "updated_utc": "2026-10-01T13:43:08+00:00",
   "complete": true
 }

@@ -212,7 +212,9 @@ def test_registry_row_mapping(name: str) -> None:
 
 def test_registry_questions() -> None:
     assert TASKS["boolq"].question.instructions == "According to the passage, is the answer to `question` yes?"
-    assert TASKS["sms_spam"].question.instructions == "The message is spam."
+    spam = TASKS["sms_spam"].question
+    assert spam.instructions == "Is this text message spam?"
+    assert set(spam.criteria) == {"true", "false"} and all(spam.criteria.values())
     assert TASKS["sst2"].question.instructions == "The review expresses a positive sentiment."
     ag = TASKS["ag_news"].question
     assert list(ag.criteria) == ["world", "sports", "business", "sci_tech"] and all(ag.criteria.values())
