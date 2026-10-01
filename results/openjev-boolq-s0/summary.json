@@ -1,0 +1,182 @@
+{
+  "run_id": "openjev-boolq-s0",
+  "backend": "openjev",
+  "task": "boolq",
+  "kind": "noul",
+  "shots_mode": "zero",
+  "k": 0,
+  "attention": null,
+  "seed": 0,
+  "n_calib": 300,
+  "n_test": 300,
+  "complete": true,
+  "raw": {
+    "accuracy": 0.7466666666666667,
+    "nll": 0.6326704374610408,
+    "brier": 0.3962553902721322,
+    "ece": 0.16612203227016578,
+    "n": 300,
+    "auroc": 0.7942166765696177
+  },
+  "calibrated": {
+    "accuracy": 0.7233333333333334,
+    "nll": 0.5320869366342251,
+    "brier": 0.3527773188498617,
+    "ece": 0.05353469190790478,
+    "n": 300,
+    "auroc": 0.7942166765696177
+  },
+  "calibrator": {
+    "choice_T": 1.0,
+    "choice_two_stage_T": 1.0,
+    "score_T": 1.0,
+    "noul_a": 0.6269913054384338,
+    "noul_b": -0.5630005007985381,
+    "meta": {
+      "run_id": "openjev-boolq-s0",
+      "n": 300,
+      "split": "calib",
+      "kind": "noul"
+    }
+  },
+  "latency_ms": {
+    "p50": 19.160264000674943,
+    "p95": 21.812855749885784,
+    "mean": 19.418152086691407
+  },
+  "prompt_tokens_mean": 183.40333333333334,
+  "truncated": 0,
+  "stages": {
+    "nli": 300
+  },
+  "reliability": [
+    {
+      "lo": 0.0,
+      "hi": 0.06666666666666667,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.06666666666666667,
+      "hi": 0.13333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.13333333333333333,
+      "hi": 0.2,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.2,
+      "hi": 0.26666666666666666,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.26666666666666666,
+      "hi": 0.3333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.3333333333333333,
+      "hi": 0.4,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.4,
+      "hi": 0.4666666666666667,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.4666666666666667,
+      "hi": 0.5333333333333333,
+      "count": 12,
+      "confidence": 0.5144799421791074,
+      "accuracy": 0.5
+    },
+    {
+      "lo": 0.5333333333333333,
+      "hi": 0.6,
+      "count": 36,
+      "confidence": 0.5681482478696405,
+      "accuracy": 0.3888888888888889
+    },
+    {
+      "lo": 0.6,
+      "hi": 0.6666666666666666,
+      "count": 34,
+      "confidence": 0.638083807490919,
+      "accuracy": 0.6176470588235294
+    },
+    {
+      "lo": 0.6666666666666666,
+      "hi": 0.7333333333333333,
+      "count": 40,
+      "confidence": 0.703013810241395,
+      "accuracy": 0.725
+    },
+    {
+      "lo": 0.7333333333333333,
+      "hi": 0.8,
+      "count": 35,
+      "confidence": 0.765953448056716,
+      "accuracy": 0.6285714285714286
+    },
+    {
+      "lo": 0.8,
+      "hi": 0.8666666666666667,
+      "count": 46,
+      "confidence": 0.8362665280774664,
+      "accuracy": 0.8478260869565217
+    },
+    {
+      "lo": 0.8666666666666667,
+      "hi": 0.9333333333333333,
+      "count": 72,
+      "confidence": 0.9008547662674834,
+      "accuracy": 0.8888888888888888
+    },
+    {
+      "lo": 0.9333333333333333,
+      "hi": 1.0,
+      "count": 25,
+      "confidence": 0.9462944294479694,
+      "accuracy": 0.88
+    }
+  ],
+  "scorer": {
+    "status": "ok",
+    "repo": "AlexWortega/openjev",
+    "checkpoint": "qwen3.5-0.8b-nli-v2s-long",
+    "revision": "f004f37e52695d6ddfb914a64dbf93942839ba1e",
+    "device": "cuda",
+    "dtype": "bfloat16",
+    "labels": [
+      "contradiction",
+      "entailment",
+      "neutral"
+    ],
+    "template": "Premise: {premise}\nHypothesis: {hypothesis}",
+    "max_tokens": 4096,
+    "prefix_sharing": true,
+    "load_seconds": 5.72,
+    "mps_cpu_solve": false,
+    "requests": 775,
+    "errors": 0,
+    "truncations": 0,
+    "name": "openjev-nli",
+    "url": "http://127.0.0.1:8765"
+  }
+}

@@ -138,7 +138,7 @@ def test_build_engine_from_registry(monkeypatch, tmp_path):
     monkeypatch.setitem(engine_mod.BACKENDS, "fake", factory)
     eng = build_engine(backend="fake", device="cpu", max_tokens=512, batch_size=2)
     assert seen == {"device": "cpu", "max_tokens": 512, "batch_size": 2}
-    assert isinstance(eng.scorer, LetterScorer) and eng.scorer.shots == 3
+    assert isinstance(eng.scorer, LetterScorer) and eng.scorer.shots == 0
     assert eng.model_name == "davout-fake"
     assert eng.calibrator == Calibrator()
 
@@ -149,11 +149,16 @@ def test_build_engine_from_registry(monkeypatch, tmp_path):
 
     path = tmp_path / "cal.json"
     Calibrator(noul_b=3.0).save(path)
-    eng = build_engine(backend="fake", shots=0, calibration=str(path))
-    assert eng.scorer.shots == 0
+    eng = build_engine(backend="fake", shots=3, calibration=str(path))
+    assert eng.scorer.shots == 3
     assert eng.calibrator.noul_b == 3.0
     assert eng.info()["calibration"]["noul_b"] == 3.0
     assert eng.answer(REQUEST)["answers"]["refund"]["noul"] > 0.9
+
+
+def test_build_engine_defaults_to_zero_shots(monkeypatch):
+    monkeypatch.setitem(engine_mod.BACKENDS, "fake", lambda **kwargs: FakeBackend())
+    assert build_engine(backend="fake").info()["shots"] == 0
 
 
 def test_two_stage_score_uses_two_stage_temperature():

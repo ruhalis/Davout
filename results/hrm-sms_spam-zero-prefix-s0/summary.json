@@ -1,0 +1,243 @@
+{
+  "run_id": "hrm-sms_spam-zero-prefix-s0",
+  "backend": "hrm",
+  "task": "sms_spam",
+  "kind": "noul",
+  "shots_mode": "zero",
+  "k": 0,
+  "attention": "prefix",
+  "seed": 0,
+  "n_calib": 300,
+  "n_test": 300,
+  "complete": true,
+  "raw": {
+    "accuracy": 0.8666666666666667,
+    "nll": 0.3946058382511851,
+    "brier": 0.22865289721079496,
+    "ece": 0.0662003866973648,
+    "n": 300,
+    "auroc": 0.5712670845750694
+  },
+  "calibrated": {
+    "accuracy": 0.8766666666666667,
+    "nll": 0.3723678185904417,
+    "brier": 0.2161124374004955,
+    "ece": 0.02594095259956921,
+    "n": 300,
+    "auroc": 0.5712670845750694
+  },
+  "calibrator": {
+    "choice_T": 1.0,
+    "choice_two_stage_T": 1.0,
+    "score_T": 1.0,
+    "noul_a": 0.26252377238102415,
+    "noul_b": -1.1444179961928098,
+    "meta": {
+      "run_id": "hrm-sms_spam-zero-prefix-s0",
+      "n": 300,
+      "split": "calib",
+      "kind": "noul"
+    }
+  },
+  "latency_ms": {
+    "p50": 26.49210699928517,
+    "p95": 26.819164749940683,
+    "mean": 26.47941083325956
+  },
+  "prompt_tokens_mean": 56.586666666666666,
+  "truncated": 0,
+  "stages": {
+    "letter": 300
+  },
+  "reliability": [
+    {
+      "lo": 0.0,
+      "hi": 0.06666666666666667,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.06666666666666667,
+      "hi": 0.13333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.13333333333333333,
+      "hi": 0.2,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.2,
+      "hi": 0.26666666666666666,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.26666666666666666,
+      "hi": 0.3333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.3333333333333333,
+      "hi": 0.4,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.4,
+      "hi": 0.4666666666666667,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.4666666666666667,
+      "hi": 0.5333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.5333333333333333,
+      "hi": 0.6,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.6,
+      "hi": 0.6666666666666666,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.6666666666666666,
+      "hi": 0.7333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.7333333333333333,
+      "hi": 0.8,
+      "count": 21,
+      "confidence": 0.7756047298000665,
+      "accuracy": 0.8095238095238095
+    },
+    {
+      "lo": 0.8,
+      "hi": 0.8666666666666667,
+      "count": 181,
+      "confidence": 0.841585759165686,
+      "accuracy": 0.861878453038674
+    },
+    {
+      "lo": 0.8666666666666667,
+      "hi": 0.9333333333333333,
+      "count": 98,
+      "confidence": 0.8837040049524355,
+      "accuracy": 0.9183673469387755
+    },
+    {
+      "lo": 0.9333333333333333,
+      "hi": 1.0,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    }
+  ],
+  "scorer": {
+    "name": "hrm-text-1b",
+    "model_id": "sapientinc/HRM-Text-1B",
+    "device": "cuda:0",
+    "dtype": "bfloat16",
+    "max_tokens": 4096,
+    "batch_size": 8,
+    "prefix_lm": true,
+    "h_cycles": 2,
+    "l_cycles": 3,
+    "scorer": "letter",
+    "shots": 0,
+    "shortlist": 10
+  },
+  "cycles": [
+    {
+      "cycle": 0,
+      "raw": {
+        "accuracy": 0.13,
+        "nll": 0.7934314493155267,
+        "brier": 0.5995771241041018,
+        "ece": 0.4274841436597452,
+        "n": 300,
+        "auroc": 0.31260918713390196
+      },
+      "calibrated": {
+        "accuracy": 0.8766666666666667,
+        "nll": 0.3746588665021211,
+        "brier": 0.21676328322598123,
+        "ece": 0.023726097328765072,
+        "n": 300,
+        "auroc": 0.687390812866098
+      },
+      "calibrator": {
+        "choice_T": 1.0,
+        "choice_two_stage_T": 1.0,
+        "score_T": 1.0,
+        "noul_a": -0.18973312375055013,
+        "noul_b": -1.71457556182851,
+        "meta": {
+          "run_id": "hrm-sms_spam-zero-prefix-s0",
+          "n": 300,
+          "split": "calib",
+          "kind": "noul",
+          "cycle": 0
+        }
+      },
+      "agreement_with_final": 0.03
+    },
+    {
+      "cycle": 1,
+      "raw": {
+        "accuracy": 0.8666666666666667,
+        "nll": 0.3946058382511851,
+        "brier": 0.22865289721079496,
+        "ece": 0.0662003866973648,
+        "n": 300,
+        "auroc": 0.5712670845750694
+      },
+      "calibrated": {
+        "accuracy": 0.8766666666666667,
+        "nll": 0.3723678185904417,
+        "brier": 0.2161124374004955,
+        "ece": 0.02594095259956921,
+        "n": 300,
+        "auroc": 0.5712670845750694
+      },
+      "calibrator": {
+        "choice_T": 1.0,
+        "choice_two_stage_T": 1.0,
+        "score_T": 1.0,
+        "noul_a": 0.26252377238102415,
+        "noul_b": -1.1444179961928098,
+        "meta": {
+          "run_id": "hrm-sms_spam-zero-prefix-s0",
+          "n": 300,
+          "split": "calib",
+          "kind": "noul",
+          "cycle": 1
+        }
+      },
+      "agreement_with_final": 1.0
+    }
+  ]
+}

@@ -90,9 +90,17 @@ def test_shots_zero_gives_empty_prefix():
     assert all(p.prefix == "" for call in backend.calls for p in call)
 
 
-def test_default_shots_use_generic_demos_per_type():
+def test_default_is_zero_shot():
     backend = FakeBackend()
     scorer = LetterScorer(backend)
+    assert scorer.info()["shots"] == 0 and scorer.shortlist == 10
+    scorer.score("state", QUESTIONS[:3])
+    assert all(p.prefix == "" for p in backend.calls[0])
+
+
+def test_shots_use_generic_demos_per_type():
+    backend = FakeBackend()
+    scorer = LetterScorer(backend, shots=3)
     assert scorer.shots == 3 and scorer.shortlist == 10
     scorer.score("state", QUESTIONS[:3])
     for p, kind in zip(backend.calls[0], ["choice", "score", "noul"]):

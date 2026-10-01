@@ -1,0 +1,182 @@
+{
+  "run_id": "openjev-sms_spam-s0",
+  "backend": "openjev",
+  "task": "sms_spam",
+  "kind": "noul",
+  "shots_mode": "zero",
+  "k": 0,
+  "attention": null,
+  "seed": 0,
+  "n_calib": 300,
+  "n_test": 300,
+  "complete": true,
+  "raw": {
+    "accuracy": 0.8766666666666667,
+    "nll": 0.430072214661278,
+    "brier": 0.22357248275656777,
+    "ece": 0.08075765937570561,
+    "n": 300,
+    "auroc": 0.6109341280443942
+  },
+  "calibrated": {
+    "accuracy": 0.8766666666666667,
+    "nll": 0.3685247124068126,
+    "brier": 0.21393548621938815,
+    "ece": 0.031224085095927397,
+    "n": 300,
+    "auroc": 0.6109341280443942
+  },
+  "calibrator": {
+    "choice_T": 1.0,
+    "choice_two_stage_T": 1.0,
+    "score_T": 1.0,
+    "noul_a": 0.18080983989871535,
+    "noul_b": -1.1582361498521845,
+    "meta": {
+      "run_id": "openjev-sms_spam-s0",
+      "n": 300,
+      "split": "calib",
+      "kind": "noul"
+    }
+  },
+  "latency_ms": {
+    "p50": 16.611416499472398,
+    "p95": 17.794577450422366,
+    "mean": 16.66405605333542
+  },
+  "prompt_tokens_mean": 36.82666666666667,
+  "truncated": 0,
+  "stages": {
+    "nli": 300
+  },
+  "reliability": [
+    {
+      "lo": 0.0,
+      "hi": 0.06666666666666667,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.06666666666666667,
+      "hi": 0.13333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.13333333333333333,
+      "hi": 0.2,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.2,
+      "hi": 0.26666666666666666,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.26666666666666666,
+      "hi": 0.3333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.3333333333333333,
+      "hi": 0.4,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.4,
+      "hi": 0.4666666666666667,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.4666666666666667,
+      "hi": 0.5333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.5333333333333333,
+      "hi": 0.6,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.6,
+      "hi": 0.6666666666666666,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.6666666666666666,
+      "hi": 0.7333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.7333333333333333,
+      "hi": 0.8,
+      "count": 8,
+      "confidence": 0.7944207092451006,
+      "accuracy": 0.625
+    },
+    {
+      "lo": 0.8,
+      "hi": 0.8666666666666667,
+      "count": 194,
+      "confidence": 0.842390835787117,
+      "accuracy": 0.8505154639175257
+    },
+    {
+      "lo": 0.8666666666666667,
+      "hi": 0.9333333333333333,
+      "count": 97,
+      "confidence": 0.8826771153429088,
+      "accuracy": 0.9484536082474226
+    },
+    {
+      "lo": 0.9333333333333333,
+      "hi": 1.0,
+      "count": 1,
+      "confidence": 0.9446378142197158,
+      "accuracy": 1.0
+    }
+  ],
+  "scorer": {
+    "status": "ok",
+    "repo": "AlexWortega/openjev",
+    "checkpoint": "qwen3.5-0.8b-nli-v2s-long",
+    "revision": "f004f37e52695d6ddfb914a64dbf93942839ba1e",
+    "device": "cuda",
+    "dtype": "bfloat16",
+    "labels": [
+      "contradiction",
+      "entailment",
+      "neutral"
+    ],
+    "template": "Premise: {premise}\nHypothesis: {hypothesis}",
+    "max_tokens": 4096,
+    "prefix_sharing": true,
+    "load_seconds": 5.72,
+    "mps_cpu_solve": false,
+    "requests": 1376,
+    "errors": 0,
+    "truncations": 0,
+    "name": "openjev-nli",
+    "url": "http://127.0.0.1:8765"
+  }
+}

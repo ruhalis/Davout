@@ -1,0 +1,171 @@
+{
+  "run_id": "hrm-banking77-task5-causal-s0",
+  "backend": "hrm",
+  "task": "banking77",
+  "kind": "choice",
+  "shots_mode": "task",
+  "k": 5,
+  "attention": "causal",
+  "seed": 0,
+  "n_calib": 300,
+  "n_test": 300,
+  "complete": true,
+  "raw": {
+    "accuracy": 0.07333333333333333,
+    "nll": 4.183414121966423,
+    "brier": 0.9768846349905107,
+    "ece": 0.0189579888894414,
+    "n": 300
+  },
+  "calibrated": {
+    "accuracy": 0.07333333333333333,
+    "nll": 4.190084410605323,
+    "brier": 0.9739645352656882,
+    "ece": 0.011823204288314123,
+    "n": 300
+  },
+  "calibrator": {
+    "choice_T": 1.0,
+    "choice_two_stage_T": 0.7382420056422813,
+    "score_T": 1.0,
+    "noul_a": 1.0,
+    "noul_b": 0.0,
+    "meta": {
+      "run_id": "hrm-banking77-task5-causal-s0",
+      "n": 300,
+      "split": "calib",
+      "kind": "choice"
+    }
+  },
+  "latency_ms": {
+    "p50": 1634.9683240005106,
+    "p95": 1649.3506813997556,
+    "mean": 1632.0794443132643
+  },
+  "prompt_tokens_mean": 28852.323333333334,
+  "truncated": 0,
+  "stages": {
+    "two_stage": 300
+  },
+  "reliability": [
+    {
+      "lo": 0.0,
+      "hi": 0.06666666666666667,
+      "count": 42,
+      "confidence": 0.060752802227568514,
+      "accuracy": 0.047619047619047616
+    },
+    {
+      "lo": 0.06666666666666667,
+      "hi": 0.13333333333333333,
+      "count": 252,
+      "confidence": 0.08770232283646294,
+      "accuracy": 0.07936507936507936
+    },
+    {
+      "lo": 0.13333333333333333,
+      "hi": 0.2,
+      "count": 6,
+      "confidence": 0.14905970635794952,
+      "accuracy": 0.0
+    },
+    {
+      "lo": 0.2,
+      "hi": 0.26666666666666666,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.26666666666666666,
+      "hi": 0.3333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.3333333333333333,
+      "hi": 0.4,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.4,
+      "hi": 0.4666666666666667,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.4666666666666667,
+      "hi": 0.5333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.5333333333333333,
+      "hi": 0.6,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.6,
+      "hi": 0.6666666666666666,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.6666666666666666,
+      "hi": 0.7333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.7333333333333333,
+      "hi": 0.8,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.8,
+      "hi": 0.8666666666666667,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.8666666666666667,
+      "hi": 0.9333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.9333333333333333,
+      "hi": 1.0,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    }
+  ],
+  "scorer": {
+    "name": "hrm-text-1b",
+    "model_id": "sapientinc/HRM-Text-1B",
+    "device": "cuda:0",
+    "dtype": "bfloat16",
+    "max_tokens": 4096,
+    "batch_size": 8,
+    "prefix_lm": false,
+    "h_cycles": 2,
+    "l_cycles": 3,
+    "scorer": "letter",
+    "shots": 0,
+    "shortlist": 10
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "run_id": "hrm-banking77-task5-prefix-s0",
+  "backend": "hrm",
+  "task": "banking77",
+  "kind": "choice",
+  "shots_mode": "task",
+  "k": 5,
+  "attention": "prefix",
+  "seed": 0,
+  "n_calib": 300,
+  "n_test": 300,
+  "complete": true,
+  "raw": {
+    "accuracy": 0.32666666666666666,
+    "nll": 3.0221841638224562,
+    "brier": 0.8560941375795564,
+    "ece": 0.09509741211129313,
+    "n": 300
+  },
+  "calibrated": {
+    "accuracy": 0.32666666666666666,
+    "nll": 3.017289681153608,
+    "brier": 0.8542081225707311,
+    "ece": 0.07435767105450794,
+    "n": 300
+  },
+  "calibrator": {
+    "choice_T": 1.0,
+    "choice_two_stage_T": 1.0266304012146774,
+    "score_T": 1.0,
+    "noul_a": 1.0,
+    "noul_b": 0.0,
+    "meta": {
+      "run_id": "hrm-banking77-task5-prefix-s0",
+      "n": 300,
+      "split": "calib",
+      "kind": "choice"
+    }
+  },
+  "latency_ms": {
+    "p50": 1702.9434949999995,
+    "p95": 1718.3622945992283,
+    "mean": 1700.790075433354
+  },
+  "prompt_tokens_mean": 28853.926666666666,
+  "truncated": 0,
+  "stages": {
+    "two_stage": 300
+  },
+  "reliability": [
+    {
+      "lo": 0.0,
+      "hi": 0.06666666666666667,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.06666666666666667,
+      "hi": 0.13333333333333333,
+      "count": 15,
+      "confidence": 0.11399780324429441,
+      "accuracy": 0.2
+    },
+    {
+      "lo": 0.13333333333333333,
+      "hi": 0.2,
+      "count": 39,
+      "confidence": 0.1703270064511346,
+      "accuracy": 0.20512820512820512
+    },
+    {
+      "lo": 0.2,
+      "hi": 0.26666666666666666,
+      "count": 55,
+      "confidence": 0.23155350796333454,
+      "accuracy": 0.21818181818181817
+    },
+    {
+      "lo": 0.26666666666666666,
+      "hi": 0.3333333333333333,
+      "count": 52,
+      "confidence": 0.29917973860282465,
+      "accuracy": 0.3269230769230769
+    },
+    {
+      "lo": 0.3333333333333333,
+      "hi": 0.4,
+      "count": 34,
+      "confidence": 0.3624578418225929,
+      "accuracy": 0.4117647058823529
+    },
+    {
+      "lo": 0.4,
+      "hi": 0.4666666666666667,
+      "count": 34,
+      "confidence": 0.42814551673097984,
+      "accuracy": 0.4117647058823529
+    },
+    {
+      "lo": 0.4666666666666667,
+      "hi": 0.5333333333333333,
+      "count": 23,
+      "confidence": 0.49520439549752127,
+      "accuracy": 0.34782608695652173
+    },
+    {
+      "lo": 0.5333333333333333,
+      "hi": 0.6,
+      "count": 16,
+      "confidence": 0.566749100286889,
+      "accuracy": 0.25
+    },
+    {
+      "lo": 0.6,
+      "hi": 0.6666666666666666,
+      "count": 14,
+      "confidence": 0.6322638650289171,
+      "accuracy": 0.35714285714285715
+    },
+    {
+      "lo": 0.6666666666666666,
+      "hi": 0.7333333333333333,
+      "count": 8,
+      "confidence": 0.6928673264533054,
+      "accuracy": 0.625
+    },
+    {
+      "lo": 0.7333333333333333,
+      "hi": 0.8,
+      "count": 3,
+      "confidence": 0.7764451350444302,
+      "accuracy": 1.0
+    },
+    {
+      "lo": 0.8,
+      "hi": 0.8666666666666667,
+      "count": 2,
+      "confidence": 0.8214942298030021,
+      "accuracy": 0.5
+    },
+    {
+      "lo": 0.8666666666666667,
+      "hi": 0.9333333333333333,
+      "count": 1,
+      "confidence": 0.8735357029684573,
+      "accuracy": 0.0
+    },
+    {
+      "lo": 0.9333333333333333,
+      "hi": 1.0,
+      "count": 4,
+      "confidence": 0.9477410103540735,
+      "accuracy": 1.0
+    }
+  ],
+  "scorer": {
+    "name": "hrm-text-1b",
+    "model_id": "sapientinc/HRM-Text-1B",
+    "device": "cuda:0",
+    "dtype": "bfloat16",
+    "max_tokens": 4096,
+    "batch_size": 8,
+    "prefix_lm": true,
+    "h_cycles": 2,
+    "l_cycles": 3,
+    "scorer": "letter",
+    "shots": 0,
+    "shortlist": 10
+  }
+}

@@ -15,7 +15,7 @@ def _env(name: str, default: Any = None) -> Any:
 
 def _add_model_flags(p: argparse.ArgumentParser) -> None:
     p.add_argument("--device", default=_env("DAVOUT_DEVICE", "auto"))
-    p.add_argument("--shots", type=int, default=_env("DAVOUT_SHOTS"))
+    p.add_argument("--shots", type=int, default=_env("DAVOUT_SHOTS"), help="built-in few-shot examples per prompt (default: 0)")
     p.add_argument("--calibration", default=_env("DAVOUT_CALIBRATION"))
     p.add_argument("--max-tokens", type=int, default=4096)
     p.add_argument("--batch-size", type=int, default=8)

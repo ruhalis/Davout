@@ -92,9 +92,10 @@ Server flags: `--port`, `--device`, `--shots`, `--calibration`, `--max-tokens`,
 2. **Readout.** The whole prompt is the bidirectional prefix of the PrefixLM.
    The logits at `<|im_end|>` over the letter tokens `A`, `B`, … are the raw
    scores for the options.
-3. **Few-shot priming.** The model card says zero-shot is noticeably weaker, so
-   three built-in generic examples are prepended by default (`--shots 0` turns
-   them off). They triple the prompt length.
+3. **Few-shot priming.** Prompts are zero-shot by default. `--shots N` prepends
+   N built-in generic examples (up to 4); the model card recommends few-shot,
+   but the benchmark found no accuracy gain and three examples triple the
+   prompt length.
 4. **Large Choice sets.** HRM has 26 single-token letters. A Choice with more
    options runs in two stages, as Jev describes for itself: every option is
    judged independently with a Yes/No prompt, then the 10 best go through a
@@ -139,7 +140,7 @@ uv run davout bench report results --out results/report.md
 ```
 
 ```bash
-uv run davout calibrate results/hrm-*-generic3-prefix-s0 --out calibration.json
+uv run davout calibrate results/hrm-*-zero-prefix-s0 --out calibration.json
 ```
 
 - Start the baseline's sidecar first with `npm run openjev` in `~/projects/forum`.
@@ -154,10 +155,52 @@ uv run davout calibrate results/hrm-*-generic3-prefix-s0 --out calibration.json
   `{"state": ..., "question": {"type": ..., "instructions": ..., "criteria": ...}, "label": ...}`,
   then `davout bench run --backend hrm --jsonl my.jsonl --shots-mode task -k 5`.
 
-## First measurements
+## Benchmark results
+
+Run on 1 October 2026 on an RTX 5090 (bf16), one seed, 300 calibration and 300
+test decisions per run. With 300 test decisions, accuracy differences under
+about 0.05 are within noise. The full table is in
+[results/report.md](results/report.md).
+
+HRM zero-shot against the OpenJev baseline, both after calibration:
+
+| Task | Type | HRM accuracy | OpenJev accuracy | HRM ECE | OpenJev ECE | HRM p50 | OpenJev p50 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| BoolQ | Noul | 0.873 | 0.723 | 0.048 | 0.054 | 32 ms | 19 ms |
+| SST-2 | Noul | 0.920 | 0.813 | 0.035 | 0.029 | 27 ms | 16 ms |
+| SMS spam | Noul | 0.877 | 0.877 | 0.026 | 0.031 | 26 ms | 17 ms |
+| AG News | Choice, 4 options | 0.830 | 0.830 | 0.088 | 0.096 | 31 ms | 32 ms |
+| Yelp stars | Score, 5 levels | 0.530 | 0.393 | 0.073 | 0.064 | 33 ms | 34 ms |
+| Banking77 | Choice, 77 options | 0.350 | 0.730 | 0.073 | 0.155 | 469 ms | 113 ms |
+
+- **HRM is ahead on reading-style judgments** (BoolQ, SST-2, Yelp), level on AG
+  News, and far behind on Banking77, where the two-stage path is both slow and
+  inaccurate.
+- **SMS spam is a failure for both models.** 0.877 is the share of non-spam
+  messages, so neither beats always answering "not spam" (AUROC 0.57 for HRM,
+  0.61 for OpenJev). The cause is not yet investigated.
+- **Calibration after the fact is enough to reach ECE under 0.1** for HRM on
+  every task. Raw HRM output is already close on Noul and Choice (ECE 0.04 to
+  0.13) and poor on Score (0.29).
+- **Few-shot examples do not help.** Zero-shot, generic 3-shot and task 5-shot
+  agree within noise on every task, while the examples cost 1.3 to 5 times the
+  latency. The server therefore defaults to zero-shot.
+- **The first H cycle is close to useless.** Reading the answer after cycle 1
+  gives chance or majority-class accuracy on five of the six tasks and 0.57
+  against 0.83 on AG News, so early exit is not viable without training for it.
+- **Bidirectional prefix attention is essential.** With plain causal attention,
+  accuracy falls to 0.38 on AG News, 0.24 on Yelp and 0.07 on Banking77, so the
+  state cannot be encoded once and shared between questions.
+- **OpenJev's latency is for its reference kernels**; its optional fast kernels
+  were not installed on the benchmark machine.
+- Dataset text was used as published, including literal `\n` and broken HTML
+  entities in Yelp and AG News.
+
+## Measurements on the Mac
 
 Measured on an Apple M4 with 16 GB (bf16 on MPS), uncalibrated, 1 October 2026.
-These are single requests, not a benchmark.
+These are single requests, not a benchmark, taken when the default was three
+examples; "3 shots" below means `--shots 3`.
 
 | Request | Input tokens | Time |
 | --- | --- | --- |
@@ -175,10 +218,7 @@ These are single requests, not a benchmark.
   against Jev's 0.99) and it rates "Thanks, that fixed it!" at 0.35 against
   Jev's 0.02.
 - **Noul answers move a lot with the built-in examples.** One test question
-  went from 0.77 at zero shots to 0.07 at three. The benchmark's shot
-  comparison exists to settle which default is right.
-- **The first H cycle carries little signal.** Its letter logits are nearly
-  flat, so early exit after one cycle looks unpromising before any numbers.
+  went from 0.77 at zero shots to 0.07 at three.
 - **Batching gives almost no speedup on MPS**, so questions in one request run
   at roughly sequential cost on this machine.
 

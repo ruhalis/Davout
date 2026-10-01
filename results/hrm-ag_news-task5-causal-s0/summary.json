@@ -1,0 +1,237 @@
+{
+  "run_id": "hrm-ag_news-task5-causal-s0",
+  "backend": "hrm",
+  "task": "ag_news",
+  "kind": "choice",
+  "shots_mode": "task",
+  "k": 5,
+  "attention": "causal",
+  "seed": 0,
+  "n_calib": 300,
+  "n_test": 300,
+  "complete": true,
+  "raw": {
+    "accuracy": 0.38,
+    "nll": 1.373767660210126,
+    "brier": 0.7367348440735092,
+    "ece": 0.06575269144169613,
+    "n": 300
+  },
+  "calibrated": {
+    "accuracy": 0.38,
+    "nll": 1.3653372719051549,
+    "brier": 0.7376172862704832,
+    "ece": 0.07364372677239629,
+    "n": 300
+  },
+  "calibrator": {
+    "choice_T": 1.8887263780426635,
+    "choice_two_stage_T": 1.0,
+    "score_T": 1.0,
+    "noul_a": 1.0,
+    "noul_b": 0.0,
+    "meta": {
+      "run_id": "hrm-ag_news-task5-causal-s0",
+      "n": 300,
+      "split": "calib",
+      "kind": "choice"
+    }
+  },
+  "latency_ms": {
+    "p50": 58.91989300016576,
+    "p95": 59.72141259999262,
+    "mean": 59.11246255340908
+  },
+  "prompt_tokens_mean": 798.2233333333334,
+  "truncated": 0,
+  "stages": {
+    "letter": 300
+  },
+  "reliability": [
+    {
+      "lo": 0.0,
+      "hi": 0.06666666666666667,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.06666666666666667,
+      "hi": 0.13333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.13333333333333333,
+      "hi": 0.2,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.2,
+      "hi": 0.26666666666666666,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.26666666666666666,
+      "hi": 0.3333333333333333,
+      "count": 269,
+      "confidence": 0.3012785453273879,
+      "accuracy": 0.35315985130111527
+    },
+    {
+      "lo": 0.3333333333333333,
+      "hi": 0.4,
+      "count": 31,
+      "confidence": 0.3504178475875411,
+      "accuracy": 0.6129032258064516
+    },
+    {
+      "lo": 0.4,
+      "hi": 0.4666666666666667,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.4666666666666667,
+      "hi": 0.5333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.5333333333333333,
+      "hi": 0.6,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.6,
+      "hi": 0.6666666666666666,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.6666666666666666,
+      "hi": 0.7333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.7333333333333333,
+      "hi": 0.8,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.8,
+      "hi": 0.8666666666666667,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.8666666666666667,
+      "hi": 0.9333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.9333333333333333,
+      "hi": 1.0,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    }
+  ],
+  "scorer": {
+    "name": "hrm-text-1b",
+    "model_id": "sapientinc/HRM-Text-1B",
+    "device": "cuda:0",
+    "dtype": "bfloat16",
+    "max_tokens": 4096,
+    "batch_size": 8,
+    "prefix_lm": false,
+    "h_cycles": 2,
+    "l_cycles": 3,
+    "scorer": "letter",
+    "shots": 0,
+    "shortlist": 10
+  },
+  "cycles": [
+    {
+      "cycle": 0,
+      "raw": {
+        "accuracy": 0.24666666666666667,
+        "nll": 1.4356768328165237,
+        "brier": 0.7741395270883858,
+        "ece": 0.10476543283447577,
+        "n": 300
+      },
+      "calibrated": {
+        "accuracy": 0.24666666666666667,
+        "nll": 1.3863915966696476,
+        "brier": 0.7500493809781654,
+        "ece": 0.009187557237954252,
+        "n": 300
+      },
+      "calibrator": {
+        "choice_T": 16.014166145181118,
+        "choice_two_stage_T": 1.0,
+        "score_T": 1.0,
+        "noul_a": 1.0,
+        "noul_b": 0.0,
+        "meta": {
+          "run_id": "hrm-ag_news-task5-causal-s0",
+          "n": 300,
+          "split": "calib",
+          "kind": "choice",
+          "cycle": 0
+        }
+      },
+      "agreement_with_final": 0.05333333333333334
+    },
+    {
+      "cycle": 1,
+      "raw": {
+        "accuracy": 0.38,
+        "nll": 1.373767660210126,
+        "brier": 0.7367348440735092,
+        "ece": 0.06575269144169613,
+        "n": 300
+      },
+      "calibrated": {
+        "accuracy": 0.38,
+        "nll": 1.3653372719051549,
+        "brier": 0.7376172862704832,
+        "ece": 0.07364372677239629,
+        "n": 300
+      },
+      "calibrator": {
+        "choice_T": 1.8887263780426635,
+        "choice_two_stage_T": 1.0,
+        "score_T": 1.0,
+        "noul_a": 1.0,
+        "noul_b": 0.0,
+        "meta": {
+          "run_id": "hrm-ag_news-task5-causal-s0",
+          "n": 300,
+          "split": "calib",
+          "kind": "choice",
+          "cycle": 1
+        }
+      },
+      "agreement_with_final": 1.0
+    }
+  ]
+}

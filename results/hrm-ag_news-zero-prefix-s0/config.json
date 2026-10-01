@@ -1,0 +1,45 @@
+{
+  "run_id": "hrm-ag_news-zero-prefix-s0",
+  "config": {
+    "backend": "hrm",
+    "task": "ag_news",
+    "shots_mode": "zero",
+    "k": 0,
+    "prefix_lm": true,
+    "device": "auto",
+    "batch_size": 8,
+    "max_tokens": 4096,
+    "shortlist": 10,
+    "openjev_url": "http://127.0.0.1:8765",
+    "n_calib": 300,
+    "n_test": 300,
+    "seed": 0,
+    "out_dir": "results",
+    "jsonl": null
+  },
+  "task": {
+    "name": "ag_news",
+    "kind": "choice",
+    "n_shots": 0,
+    "n_calib": 300,
+    "n_test": 300
+  },
+  "scorer": {
+    "name": "hrm-text-1b",
+    "model_id": "sapientinc/HRM-Text-1B",
+    "device": "cuda:0",
+    "dtype": "bfloat16",
+    "max_tokens": 4096,
+    "batch_size": 8,
+    "prefix_lm": true,
+    "h_cycles": 2,
+    "l_cycles": 3,
+    "scorer": "letter",
+    "shots": 0,
+    "shortlist": 10
+  },
+  "davout_version": "0.1.0",
+  "created_utc": "2026-10-01T11:36:17+00:00",
+  "updated_utc": "2026-10-01T11:36:35+00:00",
+  "complete": true
+}

@@ -1,0 +1,237 @@
+{
+  "run_id": "hrm-ag_news-task5-prefix-s0",
+  "backend": "hrm",
+  "task": "ag_news",
+  "kind": "choice",
+  "shots_mode": "task",
+  "k": 5,
+  "attention": "prefix",
+  "seed": 0,
+  "n_calib": 300,
+  "n_test": 300,
+  "complete": true,
+  "raw": {
+    "accuracy": 0.8266666666666667,
+    "nll": 0.6044920798389728,
+    "brier": 0.2761911482693041,
+    "ece": 0.11440060733568785,
+    "n": 300
+  },
+  "calibrated": {
+    "accuracy": 0.8266666666666667,
+    "nll": 0.5022242112164351,
+    "brier": 0.2588863672075919,
+    "ece": 0.08146981746047373,
+    "n": 300
+  },
+  "calibrator": {
+    "choice_T": 1.3956611108583512,
+    "choice_two_stage_T": 1.0,
+    "score_T": 1.0,
+    "noul_a": 1.0,
+    "noul_b": 0.0,
+    "meta": {
+      "run_id": "hrm-ag_news-task5-prefix-s0",
+      "n": 300,
+      "split": "calib",
+      "kind": "choice"
+    }
+  },
+  "latency_ms": {
+    "p50": 65.12072300029104,
+    "p95": 65.9335220997491,
+    "mean": 65.3940533133391
+  },
+  "prompt_tokens_mean": 798.2233333333334,
+  "truncated": 0,
+  "stages": {
+    "letter": 300
+  },
+  "reliability": [
+    {
+      "lo": 0.0,
+      "hi": 0.06666666666666667,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.06666666666666667,
+      "hi": 0.13333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.13333333333333333,
+      "hi": 0.2,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.2,
+      "hi": 0.26666666666666666,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.26666666666666666,
+      "hi": 0.3333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.3333333333333333,
+      "hi": 0.4,
+      "count": 1,
+      "confidence": 0.33930581765768336,
+      "accuracy": 0.0
+    },
+    {
+      "lo": 0.4,
+      "hi": 0.4666666666666667,
+      "count": 5,
+      "confidence": 0.4530979590305425,
+      "accuracy": 0.0
+    },
+    {
+      "lo": 0.4666666666666667,
+      "hi": 0.5333333333333333,
+      "count": 7,
+      "confidence": 0.5045801631800682,
+      "accuracy": 0.7142857142857143
+    },
+    {
+      "lo": 0.5333333333333333,
+      "hi": 0.6,
+      "count": 9,
+      "confidence": 0.5612243839577684,
+      "accuracy": 0.5555555555555556
+    },
+    {
+      "lo": 0.6,
+      "hi": 0.6666666666666666,
+      "count": 15,
+      "confidence": 0.6281488288218462,
+      "accuracy": 0.6666666666666666
+    },
+    {
+      "lo": 0.6666666666666666,
+      "hi": 0.7333333333333333,
+      "count": 8,
+      "confidence": 0.7012615091016389,
+      "accuracy": 0.5
+    },
+    {
+      "lo": 0.7333333333333333,
+      "hi": 0.8,
+      "count": 13,
+      "confidence": 0.7675280157715374,
+      "accuracy": 0.5384615384615384
+    },
+    {
+      "lo": 0.8,
+      "hi": 0.8666666666666667,
+      "count": 11,
+      "confidence": 0.8295833712739508,
+      "accuracy": 0.36363636363636365
+    },
+    {
+      "lo": 0.8666666666666667,
+      "hi": 0.9333333333333333,
+      "count": 32,
+      "confidence": 0.9007273843601411,
+      "accuracy": 0.8125
+    },
+    {
+      "lo": 0.9333333333333333,
+      "hi": 1.0,
+      "count": 199,
+      "confidence": 0.975893337100095,
+      "accuracy": 0.9396984924623115
+    }
+  ],
+  "scorer": {
+    "name": "hrm-text-1b",
+    "model_id": "sapientinc/HRM-Text-1B",
+    "device": "cuda:0",
+    "dtype": "bfloat16",
+    "max_tokens": 4096,
+    "batch_size": 8,
+    "prefix_lm": true,
+    "h_cycles": 2,
+    "l_cycles": 3,
+    "scorer": "letter",
+    "shots": 0,
+    "shortlist": 10
+  },
+  "cycles": [
+    {
+      "cycle": 0,
+      "raw": {
+        "accuracy": 0.4,
+        "nll": 1.3404947628268862,
+        "brier": 0.7264731087756132,
+        "ece": 0.19081783126899468,
+        "n": 300
+      },
+      "calibrated": {
+        "accuracy": 0.4,
+        "nll": 1.3394625257862516,
+        "brier": 0.7261615288216207,
+        "ece": 0.2757870324215068,
+        "n": 300
+      },
+      "calibrator": {
+        "choice_T": 1.2293058484083292,
+        "choice_two_stage_T": 1.0,
+        "score_T": 1.0,
+        "noul_a": 1.0,
+        "noul_b": 0.0,
+        "meta": {
+          "run_id": "hrm-ag_news-task5-prefix-s0",
+          "n": 300,
+          "split": "calib",
+          "kind": "choice",
+          "cycle": 0
+        }
+      },
+      "agreement_with_final": 0.41
+    },
+    {
+      "cycle": 1,
+      "raw": {
+        "accuracy": 0.8266666666666667,
+        "nll": 0.6044920798389728,
+        "brier": 0.2761911482693041,
+        "ece": 0.11440060733568785,
+        "n": 300
+      },
+      "calibrated": {
+        "accuracy": 0.8266666666666667,
+        "nll": 0.5022242112164351,
+        "brier": 0.2588863672075919,
+        "ece": 0.08146981746047373,
+        "n": 300
+      },
+      "calibrator": {
+        "choice_T": 1.3956611108583512,
+        "choice_two_stage_T": 1.0,
+        "score_T": 1.0,
+        "noul_a": 1.0,
+        "noul_b": 0.0,
+        "meta": {
+          "run_id": "hrm-ag_news-task5-prefix-s0",
+          "n": 300,
+          "split": "calib",
+          "kind": "choice",
+          "cycle": 1
+        }
+      },
+      "agreement_with_final": 1.0
+    }
+  ]
+}

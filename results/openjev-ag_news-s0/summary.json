@@ -1,0 +1,180 @@
+{
+  "run_id": "openjev-ag_news-s0",
+  "backend": "openjev",
+  "task": "ag_news",
+  "kind": "choice",
+  "shots_mode": "zero",
+  "k": 0,
+  "attention": null,
+  "seed": 0,
+  "n_calib": 300,
+  "n_test": 300,
+  "complete": true,
+  "raw": {
+    "accuracy": 0.83,
+    "nll": 0.5681501496325887,
+    "brier": 0.284307796871172,
+    "ece": 0.09654491153935875,
+    "n": 300
+  },
+  "calibrated": {
+    "accuracy": 0.83,
+    "nll": 0.5637046435649915,
+    "brier": 0.28422568216910193,
+    "ece": 0.09591934935627651,
+    "n": 300
+  },
+  "calibrator": {
+    "choice_T": 1.0268004278953722,
+    "choice_two_stage_T": 1.0,
+    "score_T": 1.0,
+    "noul_a": 1.0,
+    "noul_b": 0.0,
+    "meta": {
+      "run_id": "openjev-ag_news-s0",
+      "n": 300,
+      "split": "calib",
+      "kind": "choice"
+    }
+  },
+  "latency_ms": {
+    "p50": 32.05080000043381,
+    "p95": 32.608881098894926,
+    "mean": 31.959906900059043
+  },
+  "prompt_tokens_mean": 346.85333333333335,
+  "truncated": 0,
+  "stages": {
+    "nli": 300
+  },
+  "reliability": [
+    {
+      "lo": 0.0,
+      "hi": 0.06666666666666667,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.06666666666666667,
+      "hi": 0.13333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.13333333333333333,
+      "hi": 0.2,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.2,
+      "hi": 0.26666666666666666,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.26666666666666666,
+      "hi": 0.3333333333333333,
+      "count": 2,
+      "confidence": 0.30735871593547626,
+      "accuracy": 0.5
+    },
+    {
+      "lo": 0.3333333333333333,
+      "hi": 0.4,
+      "count": 3,
+      "confidence": 0.37535981056890755,
+      "accuracy": 1.0
+    },
+    {
+      "lo": 0.4,
+      "hi": 0.4666666666666667,
+      "count": 13,
+      "confidence": 0.4322691450466867,
+      "accuracy": 0.6153846153846154
+    },
+    {
+      "lo": 0.4666666666666667,
+      "hi": 0.5333333333333333,
+      "count": 18,
+      "confidence": 0.5003951795281116,
+      "accuracy": 0.7222222222222222
+    },
+    {
+      "lo": 0.5333333333333333,
+      "hi": 0.6,
+      "count": 11,
+      "confidence": 0.5745178330788371,
+      "accuracy": 0.8181818181818182
+    },
+    {
+      "lo": 0.6,
+      "hi": 0.6666666666666666,
+      "count": 10,
+      "confidence": 0.6283945694207577,
+      "accuracy": 0.6
+    },
+    {
+      "lo": 0.6666666666666666,
+      "hi": 0.7333333333333333,
+      "count": 13,
+      "confidence": 0.7041514931837813,
+      "accuracy": 0.5384615384615384
+    },
+    {
+      "lo": 0.7333333333333333,
+      "hi": 0.8,
+      "count": 23,
+      "confidence": 0.7634782803959598,
+      "accuracy": 0.782608695652174
+    },
+    {
+      "lo": 0.8,
+      "hi": 0.8666666666666667,
+      "count": 19,
+      "confidence": 0.8380360714371318,
+      "accuracy": 0.8421052631578947
+    },
+    {
+      "lo": 0.8666666666666667,
+      "hi": 0.9333333333333333,
+      "count": 35,
+      "confidence": 0.9090227383029227,
+      "accuracy": 0.8285714285714286
+    },
+    {
+      "lo": 0.9333333333333333,
+      "hi": 1.0,
+      "count": 153,
+      "confidence": 0.9849142798147341,
+      "accuracy": 0.9084967320261438
+    }
+  ],
+  "scorer": {
+    "status": "ok",
+    "repo": "AlexWortega/openjev",
+    "checkpoint": "qwen3.5-0.8b-nli-v2s-long",
+    "revision": "f004f37e52695d6ddfb914a64dbf93942839ba1e",
+    "device": "cuda",
+    "dtype": "bfloat16",
+    "labels": [
+      "contradiction",
+      "entailment",
+      "neutral"
+    ],
+    "template": "Premise: {premise}\nHypothesis: {hypothesis}",
+    "max_tokens": 4096,
+    "prefix_sharing": true,
+    "load_seconds": 5.72,
+    "mps_cpu_solve": false,
+    "requests": 2578,
+    "errors": 0,
+    "truncations": 0,
+    "name": "openjev-nli",
+    "url": "http://127.0.0.1:8765"
+  }
+}

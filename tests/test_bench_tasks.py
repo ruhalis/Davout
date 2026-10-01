@@ -228,14 +228,17 @@ def test_registry_questions() -> None:
 
 
 def fake_splits(name: str, n: int) -> dict[str, list[dict]]:
-    """Every split the spec uses, filled with `n` rows cycling through the sample rows and labels."""
+    """Every split the spec uses, filled with `n` distinct rows cycling through the labels."""
     spec = TASKS[name]
     n_labels = 2 if spec.kind == "noul" else len(spec.question.criteria)
+    sample = SAMPLE_ROWS[name][0][0]
+    text_column = next(c for c in spec.columns if c != spec.label_column and isinstance(sample[c], str))
     out = {}
     for split in {spec.shots_split, spec.calib_split, spec.test_split}:
         rows = []
         for i in range(n):
-            row = dict(SAMPLE_ROWS[name][0][0])
+            row = dict(sample)
+            row[text_column] = f"{split} {i}: {sample[text_column]}"  # no two rows share their text
             row[spec.label_column] = bool(i % 2) if name == "boolq" else i % n_labels
             rows.append(row)
         out[split] = rows
@@ -257,6 +260,34 @@ def test_sample_task_uses_the_right_splits(name: str) -> None:
     assert len(set(everything)) == len(everything)  # disjoint even when roles share a split
     n_labels = 2 if spec.kind == "noul" else len(spec.question.criteria)
     assert len({e.label for e in task.shots}) == min(8, n_labels)
+
+
+def test_repeated_rows_do_not_cross_roles(tmp_path: Path) -> None:
+    # ucirvine/sms_spam repeats messages; a repeat must not be a test row and also a calib row or a shot
+    spec = TASKS["sms_spam"]
+    rows = [{"sms": f"message {i % 150}", "label": (i % 150) % 2} for i in range(300)]  # every text twice
+    task = sample_task(spec, {"train": rows}, n_calib=60, n_test=60, n_shots=8, seed=0)
+    assert (len(task.shots), len(task.calib), len(task.test)) == (8, 60, 60)
+    test, calib, shots = ({e.state for e in part} for part in (task.test, task.calib, task.shots))
+    assert not (test & calib or test & shots or calib & shots)
+    # the test rows are still the head of the permutation, and distinct rows sample as before
+    assert ids(task.test) == ids(sample_task(spec, {"train": rows}, n_calib=0, n_test=60, n_shots=0, seed=0).test)
+    assert len({e.state for e in task.test}) < 60  # repeats inside one role are left alone
+
+    # shots drawn from another split are checked against the test and calib rows too
+    boolq = TASKS["boolq"]
+    row = {"question": "is the sky blue", "answer": True, "passage": "The sky is blue."}
+    val = [dict(row, question=f"q{i}", answer=bool(i % 2)) for i in range(40)]
+    train = [dict(row, question=f"q{i}", answer=bool(i % 2)) for i in range(20, 120)]  # q20..q39 are in both
+    task = sample_task(boolq, {"validation": val, "train": train}, n_calib=20, n_test=20, n_shots=8, seed=0)
+    assert len(task.shots) == 8
+    assert not {e.state["question"] for e in task.shots} & {e.state["question"] for e in task.test + task.calib}
+
+    # a decisions file gets the same treatment, and the same state under another question is not a repeat
+    other = {"type": "noul", "instructions": "Is it urgent?"}
+    lines = [{"state": f"m{i % 20}", "question": NOUL_Q if i < 20 else other, "label": i % 2 == 0} for i in range(40)]
+    own = load_jsonl_task(write_jsonl(tmp_path / "n.jsonl", lines), n_calib=18, n_test=18, n_shots=4)
+    assert (len(own.shots), len(own.calib), len(own.test)) == (4, 18, 18)
 
 
 def test_load_task_errors(monkeypatch: pytest.MonkeyPatch) -> None:

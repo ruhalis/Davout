@@ -71,7 +71,7 @@ class LetterScorer:
     best `shortlist` options are compared in one explicit choice.
     """
 
-    def __init__(self, backend: LabelBackend, shots: int = 3, shortlist: int = 10) -> None:
+    def __init__(self, backend: LabelBackend, shots: int = 0, shortlist: int = 10) -> None:
         if shots < 0:
             raise ValueError("shots must be >= 0")
         if shortlist < 2:

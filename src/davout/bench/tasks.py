@@ -280,6 +280,12 @@ def _balanced(pool: Sequence[Example], k: int) -> list[Example]:
     return out
 
 
+def _content(example: Example) -> str:
+    """What the model is shown for an example (state and question), whatever its row id."""
+    q = example.question
+    return json.dumps([example.state, q.type, q.instructions, q.criteria], ensure_ascii=False)
+
+
 def _allocate(name: str, split: str, n_rows: int, wants: dict[str, int]) -> dict[str, int]:
     """How many rows each role gets from one split; shrinks proportionally if the split is small."""
     total = sum(wants.values())
@@ -311,11 +317,17 @@ def _sample(
     n_shots: int,
     seed: int,
 ) -> TaskData:
-    """Draw disjoint shots/calib/test examples. `roles` maps role -> split name."""
+    """Draw disjoint shots/calib/test examples. `roles` maps role -> split name.
+
+    Disjoint by content as well as by row: datasets repeat rows (ucirvine/sms_spam
+    holds 5574 messages but 5160 distinct ones), so a row whose state and question
+    already belong to an earlier role (test, then calib) is passed over.
+    """
     if min(n_calib, n_test, n_shots) < 0:
         raise ValueError("n_calib, n_test and n_shots must be >= 0")
     wants_all = {"test": n_test, "calib": n_calib, "shots": n_shots}
     picked: dict[str, list[Example]] = {"test": [], "calib": [], "shots": []}
+    taken: set[str] = set()  # content of the examples given to earlier roles
     for split in dict.fromkeys(roles[r] for r in ("test", "calib", "shots")):
         n_rows = len(splits[split])
         wants = {r: wants_all[r] for r in ("test", "calib", "shots") if roles[r] == split}
@@ -323,14 +335,21 @@ def _sample(
         perm = list(range(n_rows))
         random.Random(f"{seed}:{name}:{split}").shuffle(perm)
         cursor = 0
+        limit = n_rows - got.get("shots", 0)  # rows kept back for the shots
         for role in ("test", "calib"):
             if role in got:
-                picked[role] = [make(split, i) for i in perm[cursor : cursor + got[role]]]
-                cursor += got[role]
+                chosen: list[Example] = []
+                while len(chosen) < got[role] and cursor < limit:
+                    ex = make(split, perm[cursor])
+                    cursor += 1
+                    if _content(ex) not in taken:
+                        chosen.append(ex)
+                picked[role] = chosen
+                taken.update(_content(ex) for ex in chosen)
         if got.get("shots"):
             pool_size = min(n_rows - cursor, max(SHOT_POOL, 4 * got["shots"]))
             pool = [make(split, i) for i in reversed(perm[n_rows - pool_size :])]
-            picked["shots"] = _balanced(pool, got["shots"])
+            picked["shots"] = _balanced([ex for ex in pool if _content(ex) not in taken], got["shots"])
     return TaskData(name, kind, picked["shots"], picked["calib"], picked["test"])
 
 
