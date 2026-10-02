@@ -156,6 +156,39 @@ def test_build_engine_from_registry(monkeypatch, tmp_path):
     assert eng.answer(REQUEST)["answers"]["refund"]["noul"] > 0.9
 
 
+def test_build_engine_with_a_custom_model(monkeypatch):
+    seen = {}
+
+    def factory(**kwargs):
+        seen.update(kwargs)
+        return FakeBackend()
+
+    monkeypatch.setitem(engine_mod.BACKENDS, "fake", factory)
+    eng = build_engine(backend="fake", model="checkpoints/ftA/model")
+    assert seen["model"] == "checkpoints/ftA/model"
+    assert eng.model_name == "davout-fake@checkpoints/ftA/model"
+    assert eng.answer(REQUEST)["model"] == eng.info()["model"] == "davout-fake@checkpoints/ftA/model"
+
+
+def test_hrm_factory_passes_the_model_path(monkeypatch):
+    import davout.backends.hrm as hrm
+
+    calls = []
+
+    class Stub:
+        name = "hrm-text-1b"
+
+        def __init__(self, *args, **kwargs):
+            calls.append((args, kwargs))
+
+    monkeypatch.setattr(hrm, "HrmBackend", Stub)
+    assert build_engine(device="cpu", max_tokens=512, batch_size=2).model_name == "davout-hrm-text-1b"
+    assert calls[-1] == ((), {"device": "cpu", "max_tokens": 512, "batch_size": 2})  # the stock model, as before
+    eng = build_engine(model="/ckpt/ftA/model")
+    assert calls[-1][1]["model_id_or_path"] == "/ckpt/ftA/model"
+    assert eng.model_name == "davout-hrm-text-1b@/ckpt/ftA/model"
+
+
 def test_build_engine_defaults_to_zero_shots(monkeypatch):
     monkeypatch.setitem(engine_mod.BACKENDS, "fake", lambda **kwargs: FakeBackend())
     assert build_engine(backend="fake").info()["shots"] == 0

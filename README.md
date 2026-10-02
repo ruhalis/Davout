@@ -206,6 +206,77 @@ HRM zero-shot against the OpenJev baseline, both after calibration:
 - Dataset text was used as published, including literal `\n` and broken HTML
   entities in Yelp and AG News.
 
+## Fine-tuning
+
+`davout train` fine-tunes all 1.18B parameters with log loss over the answer
+options only, the "calibration training" step of a Jev analog.
+
+```bash
+uv run --extra eval davout train build-data --out data/train_v1
+```
+
+```bash
+uv run --extra eval davout train run --data data/train_v1 --out checkpoints/ftA
+```
+
+```bash
+uv run --extra eval davout bench run --backend hrm --task boolq --model checkpoints/ftA/model --tag ftA --out results-ftA
+```
+
+- **Data:** 96,000 examples from 23 public datasets converted to Noul, Choice
+  and Score questions with randomised wording, option order and criteria. The
+  six benchmark datasets are excluded, as are banking intents.
+- **Recipe:** one epoch, 1,500 steps of 64 examples, AdamW at 1e-5, fp32
+  weights with bf16 autocast and gradient checkpointing. On an RTX 5090 it
+  takes about an hour and 24 GB.
+- **`--aux-weight 0.5`** adds the same loss on the answer after the first H
+  cycle, to train early exit.
+- `--model` also works on `serve` and `ask`. Checkpoints are not in this repo.
+
+Results from 1–2 October 2026, zero-shot on the same 300 test rows as above.
+Arm A trains the final answer only; arm B adds the first-cycle loss. Full
+tables are in [results-ft-report.md](results-ft-report.md) and
+[finetune/analysis/](finetune/analysis/).
+
+| Task | Base | Arm A | Arm B | OpenJev |
+| --- | --- | --- | --- | --- |
+| Banking77 | 0.350 | 0.623 | 0.613 | 0.730 |
+| Yelp stars | 0.530 | 0.580 | 0.580 | 0.393 |
+| SMS spam | 0.933 | 0.963 | 0.957 | 0.890 |
+| AG News | 0.830 | 0.820 | 0.810 | 0.830 |
+| BoolQ | 0.873 | 0.870 | 0.870 | 0.723 |
+| SST-2 | 0.920 | 0.920 | 0.913 | 0.813 |
+| Mean raw NLL | 0.953 | 0.674 | 0.707 | 0.806 |
+
+- **Fine-tuning improved the probabilities more than the answers.** Accuracy
+  rose clearly only on Banking77 (+0.27) and marginally on SMS spam and Yelp.
+  Raw loss fell on BoolQ, AG News, Yelp and Banking77, and Yelp's raw ECE went
+  from 0.29 to 0.13. Raw loss on SMS spam rose slightly; calibration removes
+  that.
+- **Arm A is the one to keep.** Arm B matches it on accuracy but has slightly
+  worse raw loss on four tasks.
+- **Early exit is still not usable.** The first-cycle loss lifts the first
+  cycle from chance to 0.45–0.83 on held-out tasks, but it stays 0.08 to 0.17
+  below the full model. Exiting only when the first cycle is confident lets
+  44% of decisions stop early for a 0.018 drop in accuracy, a potential 22%
+  compute saving that the code does not yet implement.
+- **Wording sensitivity is reduced, not cured.** With the bare statement "The
+  message is spam." AUROC rose from 0.57 to 0.81, but accuracy is still at the
+  majority rate.
+- **On the private routing eval the fine-tuned model is much better than the
+  base and not distinguishable from OpenJev** in utility when each model uses
+  thresholds tuned for it. At the router's existing thresholds it is worse,
+  it still picks the right first agent less often (61% against 71% on test),
+  and it costs about 2.7 times the compute per message.
+
+Limits on these claims:
+
+- The largest gains are on tasks with a near-domain training source: other
+  intent sets for Banking77, Amazon reviews for Yelp. SMS spam has none.
+- The learning rate was chosen in a pilot that read benchmark test rows.
+- One seed, 300 test rows per task, and the two arms were exported at
+  different steps (1,250 and 1,000).
+
 ## Measurements on the Mac
 
 Measured on an Apple M4 with 16 GB (bf16 on MPS), uncalibrated, 1 October 2026.
@@ -237,9 +308,9 @@ examples; "3 shots" below means `--shots 3`.
 - **No shared state encoding.** Jev reads the state once for all questions.
   HRM-Text's prompt attention is bidirectional, so nothing can be cached and
   every question re-encodes the state.
-- **No calibration training yet.** Jev is trained for calibrated outputs.
-  Davout calibrates after the fact; fine-tuning with a proper scoring rule is
-  the next step once the benchmark gives a baseline.
+- **Calibration training is a short fine-tune, not Jev's method.** Jev is
+  trained for calibrated outputs with a method TypeSafe has not described.
+  Davout offers log-loss fine-tuning plus calibration after the fact.
 - **Score levels see each other.** Jev judges each level independently; here
   the levels are options of one prompt.
 - **Limits.** 4,096 tokens per prompt (the state is cut from the left to fit),
@@ -256,5 +327,7 @@ examples; "3 shots" below means `--shots 3`.
 | `src/davout/engine.py`, `server.py`, `cli.py` | Request handling, HTTP server, `davout` command |
 | `src/davout/scorer_nli.py` | OpenJev baseline arm |
 | `src/davout/bench/` | Tasks, runner, report |
+| `src/davout/train/` | Training-data builder and fine-tuning loop |
+| `results/`, `results-ftA/`, `results-ftB/`, `finetune/` | Benchmark runs, fine-tuned runs, training logs and analysis |
 
 Tests: `uv run pytest -q`.

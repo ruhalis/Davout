@@ -1,0 +1,243 @@
+{
+  "run_id": "hrm-ftB-sms_spam-zero-prefix-s0",
+  "backend": "hrm",
+  "task": "sms_spam",
+  "kind": "noul",
+  "shots_mode": "zero",
+  "k": 0,
+  "attention": "prefix",
+  "seed": 0,
+  "n_calib": 300,
+  "n_test": 300,
+  "complete": true,
+  "raw": {
+    "accuracy": 0.8766666666666667,
+    "nll": 0.24037257693396272,
+    "brier": 0.1647135252141828,
+    "ece": 0.10322974384241602,
+    "n": 300,
+    "auroc": 0.9834549378275614
+  },
+  "calibrated": {
+    "accuracy": 0.9566666666666667,
+    "nll": 0.10871139482275914,
+    "brier": 0.06217857217991442,
+    "ece": 0.030047432481126925,
+    "n": 300,
+    "auroc": 0.9834549378275614
+  },
+  "calibrator": {
+    "choice_T": 1.0,
+    "choice_two_stage_T": 1.0,
+    "score_T": 1.0,
+    "noul_a": 2.940423219686698,
+    "noul_b": 6.237835615599454,
+    "meta": {
+      "run_id": "hrm-ftB-sms_spam-zero-prefix-s0",
+      "n": 300,
+      "split": "calib",
+      "kind": "noul"
+    }
+  },
+  "latency_ms": {
+    "p50": 26.69544349919306,
+    "p95": 29.8811200504133,
+    "mean": 27.76361752655551
+  },
+  "prompt_tokens_mean": 67.58666666666667,
+  "truncated": 0,
+  "stages": {
+    "letter": 300
+  },
+  "reliability": [
+    {
+      "lo": 0.0,
+      "hi": 0.06666666666666667,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.06666666666666667,
+      "hi": 0.13333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.13333333333333333,
+      "hi": 0.2,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.2,
+      "hi": 0.26666666666666666,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.26666666666666666,
+      "hi": 0.3333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.3333333333333333,
+      "hi": 0.4,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.4,
+      "hi": 0.4666666666666667,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.4666666666666667,
+      "hi": 0.5333333333333333,
+      "count": 2,
+      "confidence": 0.5105274691052468,
+      "accuracy": 0.0
+    },
+    {
+      "lo": 0.5333333333333333,
+      "hi": 0.6,
+      "count": 8,
+      "confidence": 0.5662838199667926,
+      "accuracy": 0.625
+    },
+    {
+      "lo": 0.6,
+      "hi": 0.6666666666666666,
+      "count": 4,
+      "confidence": 0.6345033019521674,
+      "accuracy": 1.0
+    },
+    {
+      "lo": 0.6666666666666666,
+      "hi": 0.7333333333333333,
+      "count": 8,
+      "confidence": 0.7068853137563773,
+      "accuracy": 0.5
+    },
+    {
+      "lo": 0.7333333333333333,
+      "hi": 0.8,
+      "count": 12,
+      "confidence": 0.7677748862677891,
+      "accuracy": 0.9166666666666666
+    },
+    {
+      "lo": 0.8,
+      "hi": 0.8666666666666667,
+      "count": 9,
+      "confidence": 0.8452689977512962,
+      "accuracy": 0.8888888888888888
+    },
+    {
+      "lo": 0.8666666666666667,
+      "hi": 0.9333333333333333,
+      "count": 19,
+      "confidence": 0.901155617930283,
+      "accuracy": 0.9473684210526315
+    },
+    {
+      "lo": 0.9333333333333333,
+      "hi": 1.0,
+      "count": 238,
+      "confidence": 0.9901300318518064,
+      "accuracy": 0.9957983193277311
+    }
+  ],
+  "scorer": {
+    "name": "hrm-text-1b",
+    "model_id": "/home/circle/davout/checkpoints/ftB/model",
+    "device": "cuda:0",
+    "dtype": "bfloat16",
+    "max_tokens": 4096,
+    "batch_size": 8,
+    "prefix_lm": true,
+    "h_cycles": 2,
+    "l_cycles": 3,
+    "scorer": "letter",
+    "shots": 0,
+    "shortlist": 10
+  },
+  "cycles": [
+    {
+      "cycle": 0,
+      "raw": {
+        "accuracy": 0.8766666666666667,
+        "nll": 0.37251120426660095,
+        "brier": 0.21592971421863189,
+        "ece": 0.05644591756940154,
+        "n": 300,
+        "auroc": 0.6781420203473435
+      },
+      "calibrated": {
+        "accuracy": 0.8766666666666667,
+        "nll": 0.3567935377344748,
+        "brier": 0.21068373451011638,
+        "ece": 0.023387601714441247,
+        "n": 300,
+        "auroc": 0.6781420203473435
+      },
+      "calibrator": {
+        "choice_T": 1.0,
+        "choice_two_stage_T": 1.0,
+        "score_T": 1.0,
+        "noul_a": 1.1067703391605586,
+        "noul_b": 1.0474231167097792,
+        "meta": {
+          "run_id": "hrm-ftB-sms_spam-zero-prefix-s0",
+          "n": 300,
+          "split": "calib",
+          "kind": "noul",
+          "cycle": 0
+        }
+      },
+      "agreement_with_final": 1.0
+    },
+    {
+      "cycle": 1,
+      "raw": {
+        "accuracy": 0.8766666666666667,
+        "nll": 0.24037257693396272,
+        "brier": 0.1647135252141828,
+        "ece": 0.10322974384241602,
+        "n": 300,
+        "auroc": 0.9834549378275614
+      },
+      "calibrated": {
+        "accuracy": 0.9566666666666667,
+        "nll": 0.10871139482275914,
+        "brier": 0.06217857217991442,
+        "ece": 0.030047432481126925,
+        "n": 300,
+        "auroc": 0.9834549378275614
+      },
+      "calibrator": {
+        "choice_T": 1.0,
+        "choice_two_stage_T": 1.0,
+        "score_T": 1.0,
+        "noul_a": 2.940423219686698,
+        "noul_b": 6.237835615599454,
+        "meta": {
+          "run_id": "hrm-ftB-sms_spam-zero-prefix-s0",
+          "n": 300,
+          "split": "calib",
+          "kind": "noul",
+          "cycle": 1
+        }
+      },
+      "agreement_with_final": 1.0
+    }
+  ]
+}

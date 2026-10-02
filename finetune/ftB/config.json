@@ -1,0 +1,88 @@
+{
+  "config": {
+    "data_dir": "/home/circle/davout/data/train_v1",
+    "out_dir": "/home/circle/davout/checkpoints/ftB",
+    "base": "sapientinc/HRM-Text-1B",
+    "lr": 1e-05,
+    "warmup": 30,
+    "steps": null,
+    "batch": 64,
+    "max_batch_tokens": 8192,
+    "aux_weight": 0.5,
+    "weight_decay": 0.1,
+    "betas": [
+      0.9,
+      0.95
+    ],
+    "clip": 30.0,
+    "eval_steps": [
+      100,
+      250,
+      500,
+      750,
+      1000,
+      1250,
+      1500
+    ],
+    "seed": 0,
+    "lr_min_ratio": 0.1,
+    "device": "auto",
+    "grad_checkpointing": true,
+    "base_dev_xfer_nll": null,
+    "max_steps": null,
+    "max_tokens": 512,
+    "eval_at_start": true,
+    "gate_step": 250,
+    "gate_margin": 0.02,
+    "sanity_tol": 0.01
+  },
+  "fingerprint": {
+    "base": "sapientinc/HRM-Text-1B",
+    "lr": 1e-05,
+    "warmup": 30,
+    "steps": null,
+    "batch": 64,
+    "max_batch_tokens": 8192,
+    "aux_weight": 0.5,
+    "weight_decay": 0.1,
+    "betas": [
+      0.9,
+      0.95
+    ],
+    "clip": 30.0,
+    "eval_steps": [
+      100,
+      250,
+      500,
+      750,
+      1000,
+      1250,
+      1500
+    ],
+    "seed": 0,
+    "lr_min_ratio": 0.1,
+    "max_tokens": 512,
+    "eval_at_start": true,
+    "data": {
+      "train": "0525503d54e5c69ec3907b627eb8ed9e1cf9551b90d3f7bdc49327e2253ca415",
+      "dev_in": "da14ee927d2b9abd57fda8573bca58ad97ddfce390df10c4ee9ec0d8ce1ed5d2",
+      "dev_xfer": "e479b6cd90fadd89fd58ca3b99bb8fe8f74d5972f816dd0d2c961a16f61d4125"
+    }
+  },
+  "rows": {
+    "train": 96000,
+    "dev_in": 2000,
+    "dev_xfer": 1077
+  },
+  "dropped_too_long": {
+    "train": 0,
+    "dev_in": 0,
+    "dev_xfer": 0
+  },
+  "total_steps": 1500,
+  "trainable_parameters": 1182793728,
+  "L_bp_cycles": [
+    0,
+    3
+  ]
+}

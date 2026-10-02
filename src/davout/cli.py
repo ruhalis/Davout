@@ -1,4 +1,4 @@
-"""Command-line interface: serve, download, ask, bench, calibrate."""
+"""Command-line interface: serve, download, ask, bench, calibrate, train."""
 from __future__ import annotations
 
 import argparse
@@ -15,6 +15,7 @@ def _env(name: str, default: Any = None) -> Any:
 
 def _add_model_flags(p: argparse.ArgumentParser) -> None:
     p.add_argument("--device", default=_env("DAVOUT_DEVICE", "auto"))
+    p.add_argument("--model", default=_env("DAVOUT_MODEL"), help="model id or checkpoint path (default: HRM-Text-1B)")
     p.add_argument("--shots", type=int, default=_env("DAVOUT_SHOTS"), help="built-in few-shot examples per prompt (default: 0)")
     p.add_argument("--calibration", default=_env("DAVOUT_CALIBRATION"))
     p.add_argument("--max-tokens", type=int, default=4096)
@@ -60,6 +61,29 @@ def _build_parser() -> argparse.ArgumentParser:
     calibrate = sub.add_parser("calibrate", help="fit a serving calibrator from benchmark runs")
     calibrate.add_argument("run_dirs", nargs="+", metavar="RUN_DIR", help="run directories, or a results directory")
     calibrate.add_argument("--out", required=True, help="where to write the calibration JSON")
+
+    train = sub.add_parser("train", help="fine-tune the model on typed decisions")
+    train.set_defaults(train_help=train.print_help)
+    tsub = train.add_subparsers(dest="train_command")
+    build = tsub.add_parser("build-data", help="build the training and dev sets")
+    build.add_argument("--out", required=True, help="data directory to write")
+    build.add_argument("--seed", type=int, default=0)
+    build.add_argument("--scale", type=float, default=1.0, help="fraction of the full example counts")
+    build.add_argument("--sources", help="comma-separated source names (default: all)")
+    trun = tsub.add_parser("run", help="fine-tune on a built data directory; resumes an interrupted run")
+    trun.add_argument("--data", required=True, help="directory with train.jsonl, dev_in.jsonl, dev_xfer.jsonl")
+    trun.add_argument("--out", required=True, help="run directory (checkpoints, metrics, the exported model)")
+    trun.add_argument("--aux-weight", type=float, default=0.0, help="weight of the cycle-1 loss (default: 0)")
+    trun.add_argument("--lr", type=float, default=1e-5, help="peak learning rate")
+    trun.add_argument("--steps", type=int, default=None, help="optimizer steps of the schedule (default: one epoch)")
+    trun.add_argument("--batch", type=int, default=64, help="examples per optimizer step")
+    trun.add_argument("--max-batch-tokens", type=int, default=8192, help="rows x longest row per micro-batch")
+    trun.add_argument("--base", default=None, help="model id or path to start from (default: HRM-Text-1B)")
+    trun.add_argument("--base-dev-xfer-nll", type=float, default=None, help="base dev_xfer NLL for the step-250 gate (default: measured at step 0)")
+    trun.add_argument("--max-steps", type=int, default=None, help="stop and export after this many steps (smoke runs)")
+    trun.add_argument("--eval-steps", default=None, help="comma-separated evaluation steps (default: 100,250,500,...,1500)")
+    trun.add_argument("--seed", type=int, default=0)
+    trun.add_argument("--device", default=_env("DAVOUT_DEVICE", "auto"))
     return parser
 
 
@@ -74,11 +98,14 @@ def _add_bench_flags(p: argparse.ArgumentParser) -> None:
     p.add_argument("--max-tokens", type=int, default=4096)
     p.add_argument("--shortlist", type=int, default=10)
     p.add_argument("--openjev-url", default=_env("OPENJEV_URL", "http://127.0.0.1:8765"))
+    p.add_argument("--model", default=None, help="HRM model id or checkpoint path (default: HRM-Text-1B); needs --tag")
+    p.add_argument("--tag", default=None, help="name of the --model in run ids, e.g. ftA -> hrm-ftA-boolq-zero-prefix-s0")
 
 
 def _engine_kwargs(args: argparse.Namespace) -> dict[str, Any]:
     return {
         "device": args.device,
+        "model": args.model,
         "shots": args.shots,
         "calibration": args.calibration,
         "max_tokens": args.max_tokens,
@@ -163,6 +190,8 @@ def _bench_config(args: argparse.Namespace, **overrides: Any) -> Any:
         "max_tokens": args.max_tokens,
         "shortlist": args.shortlist,
         "openjev_url": args.openjev_url,
+        "model": args.model,
+        "tag": args.tag,
     }
     kwargs.update(overrides)
     return RunConfig(**kwargs)
@@ -231,6 +260,46 @@ def _cmd_calibrate(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_train_build(args: argparse.Namespace) -> int:
+    from davout.train.data import build
+
+    sources = [s.strip() for s in args.sources.split(",") if s.strip()] if args.sources else None
+    result = build(args.out, seed=args.seed, scale=args.scale, sources=sources)
+    if isinstance(result, (dict, list)):
+        print(json.dumps(result, indent=2, default=str))
+    elif result is not None:
+        print(result)
+    return 0
+
+
+def _cmd_train_run(args: argparse.Namespace) -> int:
+    from davout.train.loop import TrainConfig, train
+
+    kwargs: dict[str, Any] = {
+        "data_dir": args.data,
+        "out_dir": args.out,
+        "aux_weight": args.aux_weight,
+        "lr": args.lr,
+        "steps": args.steps,
+        "batch": args.batch,
+        "max_batch_tokens": args.max_batch_tokens,
+        "base_dev_xfer_nll": args.base_dev_xfer_nll,
+        "max_steps": args.max_steps,
+        "seed": args.seed,
+        "device": args.device,
+    }
+    if args.base:
+        kwargs["base"] = args.base
+    if args.eval_steps:
+        kwargs["eval_steps"] = tuple(int(s) for s in args.eval_steps.split(",") if s.strip())
+    result = train(TrainConfig(**kwargs))
+    print(json.dumps(result, indent=2, allow_nan=False))
+    gate = result.get("sanity_gate") or {}
+    return 0 if result.get("state") in ("complete", "early_stopped") and gate.get("pass") else 1
+
+
+_TRAIN_HANDLERS = {"build-data": _cmd_train_build, "run": _cmd_train_run}
+
 _BENCH_HANDLERS = {
     "run": _cmd_bench_run,
     "suite": _cmd_bench_suite,
@@ -240,7 +309,7 @@ _BENCH_HANDLERS = {
 
 
 def _guarded(handler: Any, args: argparse.Namespace) -> int:
-    """Run a bench handler; expected failures become a one-line error and exit status 1."""
+    """Run a bench or train handler; expected failures become a one-line error and exit status 1."""
     try:
         return handler(args)
     except (ValueError, RuntimeError, OSError) as e:
@@ -259,6 +328,12 @@ def main(argv: list[str] | None = None) -> int:
         return _guarded(handler, args)
     if args.command == "calibrate":
         return _guarded(_cmd_calibrate, args)
+    if args.command == "train":
+        handler = _TRAIN_HANDLERS.get(args.train_command)
+        if handler is None:
+            args.train_help()
+            return 2
+        return _guarded(handler, args)
     handlers = {"serve": _cmd_serve, "download": _cmd_download, "ask": _cmd_ask}
     handler = handlers.get(args.command)
     if handler is None:

@@ -1,0 +1,77 @@
+{
+  "state": "complete",
+  "reason": null,
+  "step": 1500,
+  "total_steps": 1500,
+  "stop_at": 1500,
+  "aux_weight": 0.0,
+  "lr": 1e-05,
+  "best": {
+    "step": 1250,
+    "dev_xfer_nll": 0.44659852468843536,
+    "nll": {
+      "dev_in": {
+        "c1": 1.0633209578013416,
+        "final": 0.3385795945054847
+      },
+      "dev_xfer": {
+        "c1": 1.1499692201069434,
+        "final": 0.44659852468843536
+      }
+    }
+  },
+  "base": {
+    "dev_in": {
+      "c1": 1.0744881180899686,
+      "final": 0.6775552471982572
+    },
+    "dev_xfer": {
+      "c1": 1.1523246175820303,
+      "final": 0.8167322429761467
+    }
+  },
+  "base_dev_xfer_nll": 0.8167322429761467,
+  "nonfinite_steps": 0,
+  "padded_tokens": 19112657,
+  "train_seconds": 3360.69274549307,
+  "peak_memory_gib": 24.03745126724243,
+  "model_dir": "/home/circle/davout/checkpoints/ftA/model",
+  "sanity_gate": {
+    "pass": true,
+    "tolerance": 0.01,
+    "max_final_diff": 0.00035155964011901464,
+    "in_loop_nll": {
+      "dev_in": {
+        "c1": 1.0633209578013416,
+        "final": 0.3385795945054847
+      },
+      "dev_xfer": {
+        "c1": 1.1499692201069434,
+        "final": 0.44659852468843536
+      }
+    },
+    "served_nll": {
+      "dev_in": {
+        "c1": 1.0628544408554037,
+        "final": 0.3387589858919772
+      },
+      "dev_xfer": {
+        "c1": 1.1497280796304623,
+        "final": 0.44624696504831635
+      }
+    },
+    "abs_diff": {
+      "dev_in": {
+        "c1": 0.0004665169459379115,
+        "final": 0.0001793913864925334
+      },
+      "dev_xfer": {
+        "c1": 0.00024114047648104986,
+        "final": 0.00035155964011901464
+      }
+    },
+    "served_dtype": "bfloat16",
+    "served_device": "cuda:0"
+  },
+  "tok_s": 5687.11823645034
+}

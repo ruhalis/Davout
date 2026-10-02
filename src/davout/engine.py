@@ -70,13 +70,14 @@ class Engine:
         return out
 
 
-def _hrm_backend(*, device: str, max_tokens: int, batch_size: int) -> LabelBackend:
+def _hrm_backend(*, device: str, max_tokens: int, batch_size: int, model: str | None = None) -> LabelBackend:
     from davout.backends.hrm import HrmBackend
 
-    return HrmBackend(device=device, max_tokens=max_tokens, batch_size=batch_size)
+    which = {} if model is None else {"model_id_or_path": model}
+    return HrmBackend(device=device, max_tokens=max_tokens, batch_size=batch_size, **which)
 
 
-# name -> factory(device=, max_tokens=, batch_size=); add new backends here.
+# name -> factory(device=, max_tokens=, batch_size=[, model=]); add new backends here.
 BACKENDS: dict[str, Callable[..., LabelBackend]] = {"hrm": _hrm_backend}
 
 
@@ -88,11 +89,18 @@ def build_engine(
     calibration: str | None = None,
     max_tokens: int = 4096,
     batch_size: int = 8,
+    model: str | None = None,
 ) -> Engine:
-    """Build an `Engine` for a registered backend; `calibration` is a Calibrator JSON path."""
+    """Build an `Engine` for a registered backend; `calibration` is a Calibrator JSON path.
+
+    `model` is a model id or checkpoint path for the backend (None = its stock weights);
+    a custom model shows in the reported name as `davout-<backend>@<model>`.
+    """
     if backend not in BACKENDS:
         raise ValueError(f"unknown backend {backend!r}; available: {', '.join(sorted(BACKENDS))}")
     calibrator = Calibrator.load(calibration) if calibration else None
-    model = BACKENDS[backend](device=device, max_tokens=max_tokens, batch_size=batch_size)
-    scorer = LetterScorer(model, shots=DEFAULT_SHOTS if shots is None else shots)
-    return Engine(scorer, calibrator, model_name=f"davout-{model.name}")
+    which = {} if model is None else {"model": model}
+    label_backend = BACKENDS[backend](device=device, max_tokens=max_tokens, batch_size=batch_size, **which)
+    scorer = LetterScorer(label_backend, shots=DEFAULT_SHOTS if shots is None else shots)
+    name = f"davout-{label_backend.name}" + ("" if model is None else f"@{model}")
+    return Engine(scorer, calibrator, model_name=name)

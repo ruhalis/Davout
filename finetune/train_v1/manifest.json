@@ -1,0 +1,2401 @@
+{
+  "seed": 0,
+  "scale": 1.0,
+  "sources": [
+    "mnli",
+    "anli",
+    "wanli",
+    "vitaminc",
+    "scitail",
+    "squad_v2",
+    "pubmedqa",
+    "qnli",
+    "paws",
+    "tweet_offensive",
+    "tweet_hate",
+    "tweet_irony",
+    "yahoo",
+    "newsgroups",
+    "dbpedia",
+    "clinc",
+    "massive_intent",
+    "massive_scenario",
+    "trec",
+    "go_emotions",
+    "emotion",
+    "dailydialog",
+    "amazon_reviews",
+    "stsb",
+    "tweet_sentiment",
+    "civil_comments",
+    "hwu64",
+    "rte",
+    "multirc",
+    "app_reviews"
+  ],
+  "files": {
+    "train.jsonl": {
+      "rows": 96000,
+      "sha256": "0525503d54e5c69ec3907b627eb8ed9e1cf9551b90d3f7bdc49327e2253ca415"
+    },
+    "dev_in.jsonl": {
+      "rows": 2000,
+      "sha256": "da14ee927d2b9abd57fda8573bca58ad97ddfce390df10c4ee9ec0d8ce1ed5d2"
+    },
+    "dev_xfer.jsonl": {
+      "rows": 1077,
+      "sha256": "e479b6cd90fadd89fd58ca3b99bb8fe8f74d5972f816dd0d2c961a16f61d4125"
+    }
+  },
+  "spec_counts": {
+    "mnli": {
+      "nli": 10000
+    },
+    "anli": {
+      "nli": 6000
+    },
+    "wanli": {
+      "nli": 3000
+    },
+    "vitaminc": {
+      "nli": 3000
+    },
+    "scitail": {
+      "nli": 2000
+    },
+    "squad_v2": {
+      "reading": 3500
+    },
+    "pubmedqa": {
+      "reading": 2500
+    },
+    "qnli": {
+      "reading": 2000
+    },
+    "paws": {
+      "judgement": 2000
+    },
+    "tweet_offensive": {
+      "judgement": 667
+    },
+    "tweet_hate": {
+      "judgement": 667
+    },
+    "tweet_irony": {
+      "judgement": 666
+    },
+    "yahoo": {
+      "choice": 4000,
+      "ovr": 3000,
+      "candidate": 500
+    },
+    "newsgroups": {
+      "choice": 3000,
+      "ovr": 2500
+    },
+    "dbpedia": {
+      "choice": 3000,
+      "ovr": 1500,
+      "candidate": 500
+    },
+    "clinc": {
+      "choice": 6000,
+      "ovr": 1500,
+      "candidate": 2500
+    },
+    "massive_intent": {
+      "choice": 4000,
+      "candidate": 2500
+    },
+    "massive_scenario": {
+      "choice": 2000,
+      "ovr": 1000
+    },
+    "trec": {
+      "choice": 2000,
+      "ovr": 1000
+    },
+    "go_emotions": {
+      "choice": 2000,
+      "ovr": 1500
+    },
+    "emotion": {
+      "choice": 2000
+    },
+    "dailydialog": {
+      "ovr": 2000
+    },
+    "amazon_reviews": {
+      "score": 6000
+    },
+    "stsb": {
+      "score": 3000
+    },
+    "tweet_sentiment": {
+      "score": 1500
+    },
+    "civil_comments": {
+      "score": 1500
+    }
+  },
+  "train": {
+    "rows": 96000,
+    "per_source": {
+      "scitail": {
+        "nli": 2000,
+        "total": 2000
+      },
+      "go_emotions": {
+        "choice": 2000,
+        "ovr": 1500,
+        "total": 3500
+      },
+      "newsgroups": {
+        "ovr": 2500,
+        "choice": 3000,
+        "total": 5500
+      },
+      "yahoo": {
+        "ovr": 3000,
+        "choice": 4000,
+        "candidate": 500,
+        "total": 7500
+      },
+      "anli": {
+        "nli": 6000,
+        "total": 6000
+      },
+      "paws": {
+        "judgement": 2000,
+        "total": 2000
+      },
+      "trec": {
+        "choice": 2000,
+        "ovr": 1000,
+        "total": 3000
+      },
+      "stsb": {
+        "score": 3000,
+        "total": 3000
+      },
+      "clinc": {
+        "choice": 6000,
+        "candidate": 2500,
+        "ovr": 1500,
+        "total": 10000
+      },
+      "tweet_sentiment": {
+        "score": 1500,
+        "total": 1500
+      },
+      "dailydialog": {
+        "ovr": 2000,
+        "total": 2000
+      },
+      "massive_scenario": {
+        "choice": 2000,
+        "ovr": 1000,
+        "total": 3000
+      },
+      "pubmedqa": {
+        "reading": 2500,
+        "total": 2500
+      },
+      "massive_intent": {
+        "choice": 4000,
+        "candidate": 2500,
+        "total": 6500
+      },
+      "dbpedia": {
+        "choice": 3000,
+        "ovr": 1500,
+        "candidate": 500,
+        "total": 5000
+      },
+      "emotion": {
+        "choice": 2000,
+        "total": 2000
+      },
+      "wanli": {
+        "nli": 3000,
+        "total": 3000
+      },
+      "vitaminc": {
+        "nli": 3000,
+        "total": 3000
+      },
+      "civil_comments": {
+        "score": 1500,
+        "total": 1500
+      },
+      "mnli": {
+        "nli": 10000,
+        "total": 10000
+      },
+      "amazon_reviews": {
+        "score": 6000,
+        "total": 6000
+      },
+      "qnli": {
+        "reading": 2000,
+        "total": 2000
+      },
+      "squad_v2": {
+        "reading": 3500,
+        "total": 3500
+      },
+      "tweet_hate": {
+        "judgement": 667,
+        "total": 667
+      },
+      "tweet_offensive": {
+        "judgement": 667,
+        "total": 667
+      },
+      "tweet_irony": {
+        "judgement": 666,
+        "total": 666
+      }
+    },
+    "per_family": {
+      "nli": 24000,
+      "choice": 28000,
+      "ovr": 14000,
+      "judgement": 4000,
+      "score": 12000,
+      "reading": 8000,
+      "candidate": 6000
+    },
+    "positive_rate": {
+      "nli": 0.475,
+      "ovr": 0.3,
+      "judgement": 0.4365,
+      "reading": 0.5,
+      "candidate": 0.25
+    },
+    "positive_rate_per_source": {
+      "anli/nli": 0.475,
+      "clinc/candidate": 0.25,
+      "clinc/ovr": 0.3,
+      "dailydialog/ovr": 0.3,
+      "dbpedia/candidate": 0.25,
+      "dbpedia/ovr": 0.3,
+      "go_emotions/ovr": 0.3,
+      "massive_intent/candidate": 0.25,
+      "massive_scenario/ovr": 0.3,
+      "mnli/nli": 0.475,
+      "newsgroups/ovr": 0.3,
+      "paws/judgement": 0.45,
+      "pubmedqa/reading": 0.5,
+      "qnli/reading": 0.5,
+      "scitail/nli": 0.475,
+      "squad_v2/reading": 0.5,
+      "trec/ovr": 0.3,
+      "tweet_hate/judgement": 0.4198,
+      "tweet_irony/judgement": 0.5,
+      "tweet_offensive/judgement": 0.3493,
+      "vitaminc/nli": 0.475,
+      "wanli/nli": 0.475,
+      "yahoo/candidate": 0.25,
+      "yahoo/ovr": 0.3
+    },
+    "choice_option_counts": {
+      "2": 3860,
+      "3": 3906,
+      "4": 3867,
+      "5": 3838,
+      "6": 2660,
+      "7": 1210,
+      "8": 1288,
+      "9": 1209,
+      "10": 2065,
+      "11": 261,
+      "12": 243,
+      "13": 272,
+      "14": 712,
+      "15": 190,
+      "16": 204,
+      "17": 219,
+      "18": 415,
+      "19": 175,
+      "20": 368,
+      "26": 1038
+    },
+    "candidate_option_counts": {
+      "2": 793,
+      "3": 816,
+      "4": 843,
+      "5": 834,
+      "6": 297,
+      "7": 267,
+      "8": 306,
+      "9": 327,
+      "10": 417,
+      "11": 64,
+      "12": 64,
+      "13": 72,
+      "14": 129,
+      "15": 63,
+      "16": 60,
+      "17": 57,
+      "18": 61,
+      "19": 51,
+      "20": 62,
+      "26": 417
+    },
+    "choice_gold_position": {
+      "0": 6161,
+      "1": 6277,
+      "2": 4351,
+      "3": 3101,
+      "4": 2181,
+      "5": 1397,
+      "6": 899,
+      "7": 792,
+      "8": 570,
+      "9": 536,
+      "10": 232,
+      "11": 238,
+      "12": 196,
+      "13": 207,
+      "14": 126,
+      "15": 112,
+      "16": 105,
+      "17": 94,
+      "18": 70,
+      "19": 62,
+      "20": 48,
+      "21": 39,
+      "22": 36,
+      "23": 38,
+      "24": 46,
+      "25": 86
+    }
+  },
+  "dev_in": {
+    "rows": 2000,
+    "per_source": {
+      "mnli": {
+        "nli": 84,
+        "total": 84
+      },
+      "anli": {
+        "nli": 84,
+        "total": 84
+      },
+      "wanli": {
+        "nli": 83,
+        "total": 83
+      },
+      "vitaminc": {
+        "nli": 83,
+        "total": 83
+      },
+      "scitail": {
+        "nli": 83,
+        "total": 83
+      },
+      "squad_v2": {
+        "reading": 83,
+        "total": 83
+      },
+      "pubmedqa": {
+        "reading": 83,
+        "total": 83
+      },
+      "qnli": {
+        "reading": 83,
+        "total": 83
+      },
+      "paws": {
+        "judgement": 83,
+        "total": 83
+      },
+      "tweet_offensive": {
+        "judgement": 28,
+        "total": 28
+      },
+      "tweet_hate": {
+        "judgement": 28,
+        "total": 28
+      },
+      "tweet_irony": {
+        "judgement": 27,
+        "total": 27
+      },
+      "yahoo": {
+        "choice": 45,
+        "ovr": 34,
+        "candidate": 5,
+        "total": 84
+      },
+      "newsgroups": {
+        "choice": 46,
+        "ovr": 38,
+        "total": 84
+      },
+      "dbpedia": {
+        "choice": 50,
+        "ovr": 25,
+        "candidate": 9,
+        "total": 84
+      },
+      "clinc": {
+        "choice": 50,
+        "ovr": 13,
+        "candidate": 21,
+        "total": 84
+      },
+      "massive_intent": {
+        "choice": 52,
+        "candidate": 32,
+        "total": 84
+      },
+      "massive_scenario": {
+        "choice": 55,
+        "ovr": 28,
+        "total": 83
+      },
+      "trec": {
+        "choice": 55,
+        "ovr": 28,
+        "total": 83
+      },
+      "go_emotions": {
+        "choice": 47,
+        "ovr": 36,
+        "total": 83
+      },
+      "emotion": {
+        "choice": 83,
+        "total": 83
+      },
+      "dailydialog": {
+        "ovr": 83,
+        "total": 83
+      },
+      "amazon_reviews": {
+        "score": 84,
+        "total": 84
+      },
+      "stsb": {
+        "score": 83,
+        "total": 83
+      },
+      "tweet_sentiment": {
+        "score": 83,
+        "total": 83
+      },
+      "civil_comments": {
+        "score": 83,
+        "total": 83
+      }
+    },
+    "per_family": {
+      "nli": 417,
+      "reading": 249,
+      "judgement": 166,
+      "choice": 483,
+      "ovr": 285,
+      "candidate": 67,
+      "score": 333
+    },
+    "positive_rate": {
+      "nli": 0.47,
+      "reading": 0.506,
+      "judgement": 0.4398,
+      "ovr": 0.2982,
+      "candidate": 0.2388
+    },
+    "positive_rate_per_source": {
+      "anli/nli": 0.4643,
+      "clinc/candidate": 0.2381,
+      "clinc/ovr": 0.3077,
+      "dailydialog/ovr": 0.3012,
+      "dbpedia/candidate": 0.2222,
+      "dbpedia/ovr": 0.32,
+      "go_emotions/ovr": 0.3056,
+      "massive_intent/candidate": 0.25,
+      "massive_scenario/ovr": 0.2857,
+      "mnli/nli": 0.4762,
+      "newsgroups/ovr": 0.2895,
+      "paws/judgement": 0.4458,
+      "pubmedqa/reading": 0.506,
+      "qnli/reading": 0.506,
+      "scitail/nli": 0.4699,
+      "squad_v2/reading": 0.506,
+      "trec/ovr": 0.2857,
+      "tweet_hate/judgement": 0.4286,
+      "tweet_irony/judgement": 0.5185,
+      "tweet_offensive/judgement": 0.3571,
+      "vitaminc/nli": 0.4699,
+      "wanli/nli": 0.4699,
+      "yahoo/candidate": 0.2,
+      "yahoo/ovr": 0.2941
+    },
+    "choice_option_counts": {
+      "2": 62,
+      "3": 74,
+      "4": 71,
+      "5": 62,
+      "6": 71,
+      "7": 20,
+      "8": 16,
+      "9": 20,
+      "10": 24,
+      "11": 6,
+      "12": 2,
+      "13": 5,
+      "14": 14,
+      "15": 5,
+      "16": 5,
+      "17": 4,
+      "18": 4,
+      "19": 2,
+      "20": 4,
+      "26": 12
+    },
+    "candidate_option_counts": {
+      "2": 7,
+      "3": 10,
+      "4": 11,
+      "5": 14,
+      "6": 1,
+      "7": 2,
+      "8": 4,
+      "9": 1,
+      "10": 4,
+      "11": 2,
+      "14": 2,
+      "17": 1,
+      "18": 2,
+      "20": 1,
+      "26": 5
+    },
+    "choice_gold_position": {
+      "0": 95,
+      "1": 114,
+      "2": 80,
+      "3": 58,
+      "4": 35,
+      "5": 33,
+      "6": 14,
+      "7": 10,
+      "8": 11,
+      "9": 10,
+      "10": 3,
+      "11": 2,
+      "12": 1,
+      "13": 7,
+      "14": 2,
+      "16": 1,
+      "17": 2,
+      "18": 1,
+      "22": 1,
+      "24": 1,
+      "25": 2
+    }
+  },
+  "dev_xfer": {
+    "rows": 1077,
+    "per_source": {
+      "hwu64": {
+        "choice": 150,
+        "candidate": 150,
+        "total": 300
+      },
+      "rte": {
+        "nli": 277,
+        "total": 277
+      },
+      "multirc": {
+        "reading": 250,
+        "total": 250
+      },
+      "app_reviews": {
+        "score": 250,
+        "total": 250
+      }
+    },
+    "per_family": {
+      "choice": 150,
+      "candidate": 150,
+      "nli": 277,
+      "reading": 250,
+      "score": 250
+    },
+    "positive_rate": {
+      "candidate": 0.3333,
+      "nli": 0.5271,
+      "reading": 0.448
+    },
+    "positive_rate_per_source": {
+      "hwu64/candidate": 0.3333,
+      "multirc/reading": 0.448,
+      "rte/nli": 0.5271
+    },
+    "choice_option_counts": {
+      "10": 150
+    },
+    "candidate_option_counts": {
+      "10": 150
+    },
+    "choice_gold_position": {
+      "0": 19,
+      "1": 18,
+      "2": 17,
+      "3": 19,
+      "4": 14,
+      "5": 10,
+      "6": 10,
+      "7": 13,
+      "8": 17,
+      "9": 13
+    }
+  },
+  "augmentation": {
+    "dev_xfer": {
+      "candidate.k": {
+        "10": 150
+      },
+      "candidate.sibling_negative": {
+        "False": 104,
+        "True": 46
+      },
+      "choice.k": {
+        "10": 150
+      }
+    },
+    "dev_in": {
+      "candidate.descriptions": {
+        "all": 8,
+        "none": 58,
+        "mixed": 1
+      },
+      "candidate.k": {
+        "7": 2,
+        "2": 7,
+        "3": 10,
+        "10": 4,
+        "5": 14,
+        "9": 1,
+        "4": 11,
+        "14": 2,
+        "26": 5,
+        "8": 4,
+        "17": 1,
+        "18": 2,
+        "11": 2,
+        "20": 1,
+        "6": 1
+      },
+      "candidate.labelset": {
+        "topic": 5,
+        "type": 9,
+        "intent": 53
+      },
+      "candidate.names": {
+        "title": 29,
+        "raw": 19,
+        "spaced": 19
+      },
+      "candidate.sibling_negative": {
+        "False": 57,
+        "True": 10
+      },
+      "candidate.wrapper": {
+        "json": 13,
+        "quoted": 3,
+        "bare": 34,
+        "labelled": 17
+      },
+      "choice.descriptions": {
+        "all": 122,
+        "none": 322,
+        "mixed": 39
+      },
+      "choice.k": {
+        "4": 71,
+        "2": 62,
+        "10": 24,
+        "8": 16,
+        "5": 62,
+        "7": 20,
+        "3": 74,
+        "6": 71,
+        "9": 20,
+        "11": 6,
+        "16": 5,
+        "20": 4,
+        "14": 14,
+        "15": 5,
+        "13": 5,
+        "17": 4,
+        "18": 4,
+        "26": 12,
+        "19": 2,
+        "12": 2
+      },
+      "choice.labelset": {
+        "topic": 45,
+        "group": 46,
+        "type": 50,
+        "intent": 102,
+        "scenario": 55,
+        "fine": 22,
+        "coarse": 33,
+        "emotion": 130
+      },
+      "choice.names": {
+        "spaced": 165,
+        "title": 144,
+        "raw": 174
+      },
+      "choice.nota": {
+        "False": 441,
+        "True": 42
+      },
+      "choice.other": {
+        "False": 388,
+        "True": 95
+      },
+      "choice.wrapper": {
+        "labelled": 168,
+        "json": 68,
+        "quoted": 25,
+        "bare": 222
+      },
+      "judgement.criteria": {
+        "none": 95,
+        "true": 26,
+        "both": 34,
+        "false": 11
+      },
+      "judgement.form": {
+        "question": 65,
+        "statement": 101
+      },
+      "judgement.wrapper": {
+        "pair_json": 35,
+        "pair_labelled": 48,
+        "bare": 54,
+        "quoted": 5,
+        "labelled": 16,
+        "json": 8
+      },
+      "nli.criteria": {
+        "both": 88,
+        "none": 253,
+        "true": 55,
+        "false": 21
+      },
+      "nli.form": {
+        "statement": 230,
+        "question": 187
+      },
+      "nli.wrapper": {
+        "labelled": 125,
+        "bare": 207,
+        "json": 61,
+        "quoted": 24
+      },
+      "ovr.criteria": {
+        "both": 77,
+        "none": 149,
+        "false": 12,
+        "true": 47
+      },
+      "ovr.form": {
+        "statement": 163,
+        "question": 122
+      },
+      "ovr.labelset": {
+        "topic": 34,
+        "group": 38,
+        "type": 25,
+        "intent": 13,
+        "scenario": 28,
+        "fine": 12,
+        "coarse": 16,
+        "emotion": 36,
+        "act": 83
+      },
+      "ovr.negated": {
+        "False": 267,
+        "True": 18
+      },
+      "ovr.sibling_negative": {
+        "False": 264,
+        "True": 21
+      },
+      "ovr.wrapper": {
+        "bare": 148,
+        "quoted": 13,
+        "labelled": 83,
+        "json": 41
+      },
+      "reading.criteria": {
+        "both": 62,
+        "true": 45,
+        "none": 132,
+        "false": 10
+      },
+      "reading.form": {
+        "question": 152,
+        "statement": 97
+      },
+      "reading.wrapper": {
+        "bare": 84,
+        "labelled": 41,
+        "pair_labelled": 50,
+        "pair_json": 40,
+        "json": 25,
+        "quoted": 9
+      },
+      "score.collapsed": {
+        "False": 242,
+        "True": 91
+      },
+      "score.levels": {
+        "5": 58,
+        "3": 139,
+        "2": 28,
+        "6": 53,
+        "4": 55
+      },
+      "score.text": {
+        "terse": 161,
+        "descriptive": 172
+      },
+      "score.wrapper": {
+        "bare": 120,
+        "labelled": 84,
+        "json": 32,
+        "quoted": 14,
+        "pair_labelled": 52,
+        "pair_json": 31
+      }
+    },
+    "train": {
+      "candidate.descriptions": {
+        "all": 414,
+        "none": 5491,
+        "mixed": 95
+      },
+      "candidate.k": {
+        "7": 267,
+        "4": 843,
+        "5": 834,
+        "3": 816,
+        "2": 793,
+        "10": 417,
+        "6": 297,
+        "9": 327,
+        "8": 306,
+        "14": 129,
+        "11": 64,
+        "12": 64,
+        "13": 72,
+        "26": 417,
+        "15": 63,
+        "20": 62,
+        "18": 61,
+        "16": 60,
+        "17": 57,
+        "19": 51
+      },
+      "candidate.labelset": {
+        "topic": 500,
+        "type": 500,
+        "intent": 5000
+      },
+      "candidate.names": {
+        "spaced": 2034,
+        "raw": 1970,
+        "title": 1996
+      },
+      "candidate.sibling_negative": {
+        "False": 5132,
+        "True": 868
+      },
+      "candidate.wrapper": {
+        "json": 896,
+        "bare": 3047,
+        "labelled": 1765,
+        "quoted": 292
+      },
+      "choice.descriptions": {
+        "all": 6876,
+        "mixed": 1703,
+        "none": 19421
+      },
+      "choice.k": {
+        "4": 3867,
+        "10": 2065,
+        "5": 3838,
+        "9": 1209,
+        "3": 3906,
+        "6": 2660,
+        "8": 1288,
+        "2": 3860,
+        "7": 1210,
+        "20": 368,
+        "17": 219,
+        "14": 712,
+        "18": 415,
+        "13": 272,
+        "11": 261,
+        "16": 204,
+        "19": 175,
+        "12": 243,
+        "15": 190,
+        "26": 1038
+      },
+      "choice.labelset": {
+        "topic": 4000,
+        "group": 3000,
+        "type": 3000,
+        "intent": 10000,
+        "scenario": 2000,
+        "coarse": 1237,
+        "fine": 763,
+        "emotion": 4000
+      },
+      "choice.names": {
+        "raw": 9377,
+        "title": 9320,
+        "spaced": 9303
+      },
+      "choice.nota": {
+        "False": 25676,
+        "True": 2324
+      },
+      "choice.other": {
+        "False": 22951,
+        "True": 5049
+      },
+      "choice.wrapper": {
+        "labelled": 8509,
+        "bare": 13801,
+        "quoted": 1435,
+        "json": 4255
+      },
+      "judgement.criteria": {
+        "none": 2180,
+        "both": 1022,
+        "false": 200,
+        "true": 598
+      },
+      "judgement.form": {
+        "statement": 2224,
+        "question": 1776
+      },
+      "judgement.wrapper": {
+        "pair_labelled": 1217,
+        "pair_json": 783,
+        "json": 307,
+        "labelled": 594,
+        "bare": 979,
+        "quoted": 120
+      },
+      "nli.criteria": {
+        "both": 6033,
+        "true": 3556,
+        "none": 13250,
+        "false": 1161
+      },
+      "nli.form": {
+        "statement": 13212,
+        "question": 10788
+      },
+      "nli.wrapper": {
+        "labelled": 7227,
+        "quoted": 1175,
+        "json": 3695,
+        "bare": 11903
+      },
+      "ovr.criteria": {
+        "none": 7624,
+        "true": 2103,
+        "both": 3583,
+        "false": 690
+      },
+      "ovr.form": {
+        "statement": 8230,
+        "question": 5770
+      },
+      "ovr.labelset": {
+        "topic": 3000,
+        "group": 2500,
+        "type": 1500,
+        "intent": 1500,
+        "scenario": 1000,
+        "coarse": 595,
+        "fine": 405,
+        "emotion": 1500,
+        "act": 2000
+      },
+      "ovr.negated": {
+        "False": 12898,
+        "True": 1102
+      },
+      "ovr.sibling_negative": {
+        "False": 13153,
+        "True": 847
+      },
+      "ovr.wrapper": {
+        "labelled": 4173,
+        "quoted": 685,
+        "bare": 7092,
+        "json": 2050
+      },
+      "reading.criteria": {
+        "both": 1945,
+        "none": 4451,
+        "false": 391,
+        "true": 1213
+      },
+      "reading.form": {
+        "statement": 3029,
+        "question": 4971
+      },
+      "reading.wrapper": {
+        "bare": 2717,
+        "json": 845,
+        "labelled": 1647,
+        "pair_labelled": 1514,
+        "pair_json": 1013,
+        "quoted": 264
+      },
+      "score.collapsed": {
+        "False": 8998,
+        "True": 3002
+      },
+      "score.levels": {
+        "5": 4308,
+        "2": 936,
+        "3": 3481,
+        "6": 2153,
+        "4": 1122
+      },
+      "score.text": {
+        "descriptive": 6106,
+        "terse": 5894
+      },
+      "score.wrapper": {
+        "bare": 4562,
+        "quoted": 424,
+        "labelled": 2700,
+        "json": 1314,
+        "pair_labelled": 1843,
+        "pair_json": 1157
+      }
+    }
+  },
+  "dropped": {
+    "dev_xfer": {
+      "hwu64": {
+        "text_in_training_corpus": 237
+      },
+      "multirc": {
+        "over_512_tokens": 1159
+      },
+      "app_reviews": {
+        "too_short": 1014
+      }
+    },
+    "dev_in": {
+      "mnli": {
+        "cannot_phrase": 7
+      },
+      "vitaminc": {
+        "duplicate_text": 1
+      },
+      "squad_v2": {
+        "over_512_tokens": 2
+      },
+      "pubmedqa": {
+        "over_512_tokens": 6,
+        "malformed_question": 3
+      },
+      "newsgroups": {
+        "over_512_tokens": 3
+      },
+      "clinc": {
+        "excluded_intent": 21
+      },
+      "massive_intent": {
+        "duplicate_text": 2
+      },
+      "massive_scenario": {
+        "duplicate_text": 8
+      }
+    },
+    "train": {
+      "mnli": {
+        "cannot_phrase": 255
+      },
+      "wanli": {
+        "cannot_phrase": 45
+      },
+      "vitaminc": {
+        "duplicate_text": 1
+      },
+      "scitail": {
+        "cannot_phrase": 2,
+        "over_512_tokens": 1
+      },
+      "squad_v2": {
+        "over_512_tokens": 26,
+        "duplicate_text": 1
+      },
+      "pubmedqa": {
+        "over_512_tokens": 283,
+        "malformed_question": 16
+      },
+      "qnli": {
+        "over_512_tokens": 1
+      },
+      "paws": {
+        "duplicate_text": 1
+      },
+      "tweet_hate": {
+        "duplicate_text": 1
+      },
+      "yahoo": {
+        "over_512_tokens": 18,
+        "duplicate_text": 1
+      },
+      "newsgroups": {
+        "over_512_tokens": 222,
+        "empty_text": 175,
+        "duplicate_text": 16
+      },
+      "dbpedia": {
+        "over_512_tokens": 4,
+        "duplicate_text": 1
+      },
+      "clinc": {
+        "excluded_intent": 2681,
+        "held_out_for_dev": 2
+      },
+      "massive_intent": {
+        "duplicate_text": 14,
+        "held_out_for_dev": 1
+      },
+      "massive_scenario": {
+        "used_by_sibling_source": 3900,
+        "duplicate_text": 29
+      },
+      "trec": {
+        "duplicate_text": 26,
+        "held_out_for_dev": 1
+      },
+      "go_emotions": {
+        "over_512_tokens": 2
+      },
+      "dailydialog": {
+        "held_out_for_dev": 1,
+        "duplicate_text": 34
+      },
+      "amazon_reviews": {
+        "over_512_tokens": 3
+      },
+      "stsb": {
+        "duplicate_text": 13
+      },
+      "civil_comments": {
+        "duplicate_text": 5,
+        "over_512_tokens": 1
+      }
+    }
+  },
+  "shortfall": {},
+  "deviations": [],
+  "label_checks": {
+    "dailydialog": {
+      "train": {
+        "rows": 11118,
+        "ok": true,
+        "question_act": 2,
+        "ends_with_question_mark": {
+          "1": 0.007,
+          "2": 0.93,
+          "3": 0.322,
+          "4": 0.024
+        },
+        "utterances": {
+          "1": 39873,
+          "2": 24974,
+          "3": 14242,
+          "4": 8081
+        }
+      },
+      "validation": {
+        "rows": 1000,
+        "ok": true,
+        "question_act": 2,
+        "ends_with_question_mark": {
+          "1": 0.011,
+          "2": 0.947,
+          "3": 0.31,
+          "4": 0.022
+        },
+        "utterances": {
+          "1": 3125,
+          "2": 2244,
+          "3": 1775,
+          "4": 925
+        }
+      }
+    },
+    "massive_intent": {
+      "train": {
+        "rows": 11514,
+        "label_text": "60 of the 60 registry intents occur"
+      },
+      "validation": {
+        "rows": 2033,
+        "label_text": "59 of the 60 registry intents occur"
+      }
+    },
+    "massive_scenario": {
+      "train": {
+        "rows": 11514,
+        "label_text": "18 of the 18 registry scenarios occur"
+      },
+      "validation": {
+        "rows": 2033,
+        "label_text": "18 of the 18 registry scenarios occur"
+      }
+    },
+    "massive_pair": {
+      "train": {
+        "shared_ids": 11514,
+        "intent_ids": 11514,
+        "scenario_ids": 11514,
+        "same_text_and_scenario_is_intent_prefix": true
+      }
+    },
+    "clinc": {
+      "train": {
+        "rows": 15250,
+        "intent": "ClassLabel names match (151)",
+        "oos_rows": 250,
+        "excluded_rows": 3200
+      },
+      "validation": {
+        "rows": 3100,
+        "intent": "ClassLabel names match (151)",
+        "oos_rows": 100,
+        "excluded_rows": 640
+      }
+    },
+    "hwu64": {
+      "test": {
+        "rows": 1076,
+        "label": "64 of the 64 registry intents occur"
+      }
+    },
+    "rte": {
+      "validation": {
+        "rows": 277,
+        "label": "ClassLabel names match (2)"
+      }
+    },
+    "multirc": {
+      "validation": {
+        "rows": 4848,
+        "label": "ClassLabel names match (2)",
+        "paragraphs": 83
+      },
+      "train": {
+        "rows": 27243,
+        "label": "ClassLabel names match (2)",
+        "paragraphs": 456
+      }
+    },
+    "app_reviews": {
+      "train": {
+        "rows": 288065,
+        "star": {
+          "1": 39984,
+          "2": 13264,
+          "3": 23196,
+          "4": 37247,
+          "5": 174374
+        }
+      }
+    },
+    "mnli": {
+      "validation_matched": {
+        "rows": 9815,
+        "label": "ClassLabel names match (3)"
+      },
+      "train": {
+        "rows": 392702,
+        "label": "ClassLabel names match (3)"
+      }
+    },
+    "anli": {
+      "dev_r1": {
+        "rows": 1000,
+        "label": "ClassLabel names match (3)"
+      },
+      "dev_r2": {
+        "rows": 1000,
+        "label": "ClassLabel names match (3)"
+      },
+      "dev_r3": {
+        "rows": 1200,
+        "label": "ClassLabel names match (3)"
+      },
+      "train_r1": {
+        "rows": 16946,
+        "label": "ClassLabel names match (3)"
+      },
+      "train_r2": {
+        "rows": 45460,
+        "label": "ClassLabel names match (3)"
+      },
+      "train_r3": {
+        "rows": 100459,
+        "label": "ClassLabel names match (3)"
+      }
+    },
+    "wanli": {
+      "test": {
+        "rows": 5000,
+        "gold": {
+          "contradiction": 745,
+          "entailment": 1858,
+          "neutral": 2397
+        }
+      },
+      "train": {
+        "rows": 102885,
+        "gold": {
+          "contradiction": 15397,
+          "entailment": 38511,
+          "neutral": 48977
+        }
+      }
+    },
+    "vitaminc": {
+      "validation": {
+        "rows": 63054,
+        "label": {
+          "NOT ENOUGH INFO": 9042,
+          "REFUTES": 22528,
+          "SUPPORTS": 31484
+        }
+      },
+      "train": {
+        "rows": 370653,
+        "label": {
+          "NOT ENOUGH INFO": 52981,
+          "REFUTES": 131958,
+          "SUPPORTS": 185714
+        }
+      }
+    },
+    "scitail": {
+      "validation": {
+        "rows": 1304,
+        "label": {
+          "entails": 657,
+          "neutral": 647
+        }
+      },
+      "train": {
+        "rows": 23097,
+        "label": {
+          "entails": 8472,
+          "neutral": 14625
+        }
+      }
+    },
+    "squad_v2": {
+      "validation": {
+        "rows": 11873,
+        "answerable": 5928,
+        "unanswerable": 5945,
+        "answer_is_span_of_context": "300/300 sampled"
+      },
+      "train": {
+        "rows": 130319,
+        "answerable": 86821,
+        "unanswerable": 43498,
+        "answer_is_span_of_context": "300/300 sampled"
+      }
+    },
+    "pubmedqa": {
+      "train": {
+        "rows": 211269,
+        "final_decision": {
+          "no": 15125,
+          "yes": 196144
+        }
+      }
+    },
+    "qnli": {
+      "validation": {
+        "rows": 5463,
+        "label": "ClassLabel names match (2)"
+      },
+      "train": {
+        "rows": 104743,
+        "label": "ClassLabel names match (2)"
+      }
+    },
+    "paws": {
+      "validation": {
+        "rows": 8000,
+        "label": "ClassLabel names match (2)",
+        "values": {
+          "0": 4461,
+          "1": 3539
+        }
+      },
+      "train": {
+        "rows": 49401,
+        "label": "ClassLabel names match (2)",
+        "values": {
+          "0": 27572,
+          "1": 21829
+        }
+      }
+    },
+    "tweet_offensive": {
+      "validation": {
+        "rows": 1324,
+        "label": "ClassLabel names match (2)"
+      },
+      "train": {
+        "rows": 11916,
+        "label": "ClassLabel names match (2)"
+      }
+    },
+    "tweet_hate": {
+      "validation": {
+        "rows": 1000,
+        "label": "ClassLabel names match (2)"
+      },
+      "train": {
+        "rows": 9000,
+        "label": "ClassLabel names match (2)"
+      }
+    },
+    "tweet_irony": {
+      "validation": {
+        "rows": 955,
+        "label": "ClassLabel names match (2)"
+      },
+      "train": {
+        "rows": 2862,
+        "label": "ClassLabel names match (2)"
+      }
+    },
+    "yahoo": {
+      "test": {
+        "rows": 60000,
+        "topic": "ClassLabel names match (10)"
+      },
+      "train": {
+        "rows": 1400000,
+        "topic": "ClassLabel names match (10)"
+      }
+    },
+    "newsgroups": {
+      "test": {
+        "rows": 7532,
+        "label_text": {
+          "alt.atheism": 319,
+          "comp.graphics": 389,
+          "comp.os.ms-windows.misc": 394,
+          "comp.sys.ibm.pc.hardware": 392,
+          "comp.sys.mac.hardware": 385,
+          "comp.windows.x": 395,
+          "misc.forsale": 390,
+          "rec.autos": 396,
+          "rec.motorcycles": 398,
+          "rec.sport.baseball": 397,
+          "rec.sport.hockey": 399,
+          "sci.crypt": 396,
+          "sci.electronics": 393,
+          "sci.med": 396,
+          "sci.space": 394,
+          "soc.religion.christian": 398,
+          "talk.politics.guns": 364,
+          "talk.politics.mideast": 376,
+          "talk.politics.misc": 310,
+          "talk.religion.misc": 251
+        }
+      },
+      "train": {
+        "rows": 11314,
+        "label_text": {
+          "alt.atheism": 480,
+          "comp.graphics": 584,
+          "comp.os.ms-windows.misc": 591,
+          "comp.sys.ibm.pc.hardware": 590,
+          "comp.sys.mac.hardware": 578,
+          "comp.windows.x": 593,
+          "misc.forsale": 585,
+          "rec.autos": 594,
+          "rec.motorcycles": 598,
+          "rec.sport.baseball": 597,
+          "rec.sport.hockey": 600,
+          "sci.crypt": 595,
+          "sci.electronics": 591,
+          "sci.med": 594,
+          "sci.space": 593,
+          "soc.religion.christian": 599,
+          "talk.politics.guns": 546,
+          "talk.politics.mideast": 564,
+          "talk.politics.misc": 465,
+          "talk.religion.misc": 377
+        }
+      }
+    },
+    "dbpedia": {
+      "test": {
+        "rows": 70000,
+        "label": "ClassLabel names match (14)"
+      },
+      "train": {
+        "rows": 560000,
+        "label": "ClassLabel names match (14)"
+      }
+    },
+    "trec": {
+      "test": {
+        "rows": 500,
+        "labels": "42 of the 50 fine labels occur, each under its registry coarse label"
+      },
+      "train": {
+        "rows": 5452,
+        "labels": "50 of the 50 fine labels occur, each under its registry coarse label"
+      }
+    },
+    "go_emotions": {
+      "validation": {
+        "rows": 5426,
+        "labels": "ClassLabel names match (28)"
+      },
+      "train": {
+        "rows": 43410,
+        "labels": "ClassLabel names match (28)"
+      }
+    },
+    "emotion": {
+      "validation": {
+        "rows": 2000,
+        "label": "ClassLabel names match (6)"
+      },
+      "train": {
+        "rows": 16000,
+        "label": "ClassLabel names match (6)"
+      }
+    },
+    "amazon_reviews": {
+      "validation": {
+        "rows": 5000,
+        "label": {
+          "0": 1000,
+          "1": 1000,
+          "2": 1000,
+          "3": 1000,
+          "4": 1000
+        }
+      },
+      "train": {
+        "rows": 200000,
+        "label": {
+          "0": 40000,
+          "1": 40000,
+          "2": 40000,
+          "3": 40000,
+          "4": 40000
+        }
+      }
+    },
+    "stsb": {
+      "validation": {
+        "rows": 1500,
+        "score_range": [
+          0.0,
+          1.0
+        ],
+        "levels": {
+          "0": 236,
+          "1": 241,
+          "2": 266,
+          "3": 353,
+          "4": 276,
+          "5": 128
+        }
+      },
+      "train": {
+        "rows": 5749,
+        "score_range": [
+          0.0,
+          1.0
+        ],
+        "levels": {
+          "0": 592,
+          "1": 833,
+          "2": 902,
+          "3": 1359,
+          "4": 1435,
+          "5": 628
+        }
+      }
+    },
+    "tweet_sentiment": {
+      "validation": {
+        "rows": 2000,
+        "label": "ClassLabel names match (3)"
+      },
+      "train": {
+        "rows": 45615,
+        "label": "ClassLabel names match (3)"
+      }
+    },
+    "civil_comments": {
+      "validation": {
+        "rows": 97320,
+        "toxicity_range": [
+          0.0,
+          1.0
+        ],
+        "bins": {
+          "0": 68725,
+          "1": 17618,
+          "2": 8536,
+          "3": 2441
+        }
+      },
+      "train": {
+        "rows": 1804874,
+        "toxicity_range": [
+          0.0,
+          1.0
+        ],
+        "bins": {
+          "0": 1264764,
+          "1": 333119,
+          "2": 161540,
+          "3": 45451
+        }
+      }
+    }
+  },
+  "length": {
+    "max_tokens": 512,
+    "token_counter": "hrm-tokenizer",
+    "wrapping": "<|im_start|><|object_ref_start|>{prompt}<|im_end|>, as HrmBackend._encode",
+    "train": {
+      "all": {
+        "n": 96000,
+        "mean": 113.0,
+        "p50": 86,
+        "p95": 305,
+        "p99": 435,
+        "max": 512,
+        "total": 10843545
+      },
+      "per_family": {
+        "nli": {
+          "n": 24000,
+          "mean": 95.0,
+          "p50": 87,
+          "p95": 163,
+          "p99": 193,
+          "max": 393,
+          "total": 2279219
+        },
+        "reading": {
+          "n": 8000,
+          "mean": 248.2,
+          "p50": 240,
+          "p95": 451,
+          "p99": 498,
+          "max": 512,
+          "total": 1985543
+        },
+        "judgement": {
+          "n": 4000,
+          "mean": 88.0,
+          "p50": 87,
+          "p95": 137,
+          "p99": 156,
+          "max": 220,
+          "total": 352146
+        },
+        "ovr": {
+          "n": 14000,
+          "mean": 98.1,
+          "p50": 64,
+          "p95": 328,
+          "p99": 413,
+          "max": 510,
+          "total": 1372770
+        },
+        "candidate": {
+          "n": 6000,
+          "mean": 66.6,
+          "p50": 58,
+          "p95": 136,
+          "p99": 187,
+          "max": 359,
+          "total": 399784
+        },
+        "choice": {
+          "n": 28000,
+          "mean": 115.6,
+          "p50": 85,
+          "p95": 300,
+          "p99": 436,
+          "max": 512,
+          "total": 3236574
+        },
+        "score": {
+          "n": 12000,
+          "mean": 101.5,
+          "p50": 91,
+          "p95": 184,
+          "p99": 280,
+          "max": 470,
+          "total": 1217509
+        }
+      }
+    },
+    "dev_in": {
+      "all": {
+        "n": 2000,
+        "mean": 113.0,
+        "p50": 87,
+        "p95": 307,
+        "p99": 432,
+        "max": 511,
+        "total": 225917
+      },
+      "per_family": {
+        "nli": {
+          "n": 417,
+          "mean": 94.2,
+          "p50": 85,
+          "p95": 164,
+          "p99": 188,
+          "max": 207,
+          "total": 39275
+        },
+        "reading": {
+          "n": 249,
+          "mean": 233.7,
+          "p50": 223,
+          "p95": 437,
+          "p99": 479,
+          "max": 511,
+          "total": 58199
+        },
+        "judgement": {
+          "n": 166,
+          "mean": 86.4,
+          "p50": 86,
+          "p95": 136,
+          "p99": 162,
+          "max": 169,
+          "total": 14344
+        },
+        "ovr": {
+          "n": 285,
+          "mean": 83.9,
+          "p50": 62,
+          "p95": 206,
+          "p99": 406,
+          "max": 471,
+          "total": 23903
+        },
+        "candidate": {
+          "n": 67,
+          "mean": 67.6,
+          "p50": 60,
+          "p95": 128,
+          "p99": 168,
+          "max": 168,
+          "total": 4530
+        },
+        "choice": {
+          "n": 483,
+          "mean": 106.9,
+          "p50": 78,
+          "p95": 273,
+          "p99": 410,
+          "max": 467,
+          "total": 51615
+        },
+        "score": {
+          "n": 333,
+          "mean": 102.3,
+          "p50": 92,
+          "p95": 178,
+          "p99": 314,
+          "max": 332,
+          "total": 34051
+        }
+      }
+    },
+    "dev_xfer": {
+      "all": {
+        "n": 1077,
+        "mean": 152.2,
+        "p50": 85,
+        "p95": 455,
+        "p99": 503,
+        "max": 512,
+        "total": 163960
+      },
+      "per_family": {
+        "nli": {
+          "n": 277,
+          "mean": 101.8,
+          "p50": 84,
+          "p95": 203,
+          "p99": 244,
+          "max": 320,
+          "total": 28198
+        },
+        "reading": {
+          "n": 250,
+          "mean": 374.3,
+          "p50": 392,
+          "p95": 502,
+          "p99": 510,
+          "max": 512,
+          "total": 93585
+        },
+        "candidate": {
+          "n": 150,
+          "mean": 53.9,
+          "p50": 53,
+          "p95": 62,
+          "p99": 66,
+          "max": 70,
+          "total": 8085
+        },
+        "choice": {
+          "n": 150,
+          "mean": 84.9,
+          "p50": 85,
+          "p95": 93,
+          "p99": 96,
+          "max": 96,
+          "total": 12735
+        },
+        "score": {
+          "n": 250,
+          "mean": 85.4,
+          "p50": 76,
+          "p95": 146,
+          "p99": 267,
+          "max": 282,
+          "total": 21357
+        }
+      }
+    },
+    "chars_per_token": {
+      "note": "measured with the counter above on a sample of train prompts; the character proxy (used only when the HRM tokenizer is missing) assumes 2.2",
+      "sampled": 5053,
+      "mean": 3.45,
+      "p01": 2.58,
+      "min": 2.27,
+      "proxy_undercounts": 0
+    }
+  },
+  "guards": {
+    "benchmark_instructions_never_used": [
+      "according to the passage, is the answer to `question` yes",
+      "how good was the reviewer's experience",
+      "is this text message spam",
+      "the review expresses a positive sentiment",
+      "which intent does the customer's banking query express",
+      "which topic does the news article belong to"
+    ],
+    "yelp_levels_never_used": true,
+    "forbidden_wrapper": "The user wrote this message:",
+    "max_options": 26,
+    "excluded_datasets": [
+      "PolyAI/banking77",
+      "SetFit/sst5",
+      "Yelp/yelp_review_full",
+      "bitext/Bitext-customer-support-llm-chatbot-training-dataset",
+      "cornell-movie-review-data/rotten_tomatoes",
+      "fancyzhx/ag_news",
+      "fancyzhx/amazon_polarity",
+      "google/boolq",
+      "legacy-datasets/banking77",
+      "stanfordnlp/imdb",
+      "stanfordnlp/sst2",
+      "ucirvine/sms_spam"
+    ],
+    "clinc_excluded_intents": [
+      "account_blocked",
+      "application_status",
+      "apr",
+      "balance",
+      "bill_balance",
+      "bill_due",
+      "card_declined",
+      "credit_limit",
+      "credit_limit_change",
+      "credit_score",
+      "damaged_card",
+      "direct_deposit",
+      "exchange_rate",
+      "expiration_date",
+      "freeze_account",
+      "improve_credit_score",
+      "interest_rate",
+      "international_fees",
+      "min_payment",
+      "new_card",
+      "order_checks",
+      "pay_bill",
+      "pin_change",
+      "redeem_rewards",
+      "replacement_card_duration",
+      "report_fraud",
+      "report_lost_card",
+      "rewards_balance",
+      "routing",
+      "spending_history",
+      "transactions",
+      "transfer"
+    ],
+    "massive_intent_scenario_ids_disjoint": true,
+    "train_dev_content_disjoint": true
+  },
+  "near_domain": {
+    "ag_news": {
+      "sources": [
+        11,
+        12
+      ],
+      "note": "topic names overlap"
+    },
+    "yelp": {
+      "sources": [
+        21,
+        23
+      ],
+      "note": "#21 is the same task on another platform"
+    },
+    "sst2": {
+      "sources": [
+        21,
+        23
+      ],
+      "note": "no binary-sentiment Noul is trained"
+    },
+    "boolq": {
+      "sources": [
+        6,
+        8,
+        7
+      ],
+      "note": "#6 and #8 use Wikipedia passages"
+    },
+    "banking77": {
+      "sources": [
+        14,
+        15
+      ],
+      "note": "task type only, after the CLINC exclusions"
+    },
+    "sms_spam": {
+      "sources": [],
+      "note": "none"
+    },
+    "routing_eval": {
+      "sources": [
+        20,
+        11,
+        12,
+        13,
+        14,
+        16,
+        17,
+        18
+      ],
+      "note": "#20 and topic one-vs-rest are closest in form"
+    },
+    "dev_xfer/hwu64": {
+      "sources": [
+        15,
+        16
+      ],
+      "note": "HWU64 and MASSIVE share utterances and the intent taxonomy; HWU rows whose text occurs in MASSIVE or CLINC are removed, but the label space is still near-domain"
+    }
+  },
+  "dataset_revisions": {
+    "dailydialog": "f9b0ba89e62d91641632652722b479b5c65ae4b6",
+    "massive_intent": "f7672a018e8ceb37fc0184dcfbb7e665155ffea6",
+    "massive_scenario": "ca5650004c0b6fe9271a67bbbd3e3ee669be09d7",
+    "clinc": "155b9c710419136e17307b80d0a13e68cd46b4ec",
+    "hwu64": "9fb5bff1e37c4c5a6d46c1ff6f286b6d3f362222",
+    "rte": "3de24cf8022e94f4ee4b9d55a6f539891524d646",
+    "multirc": "3de24cf8022e94f4ee4b9d55a6f539891524d646",
+    "app_reviews": "9eaa95f66364367e8752b0f34c00f67aafa95d15",
+    "mnli": "da70db2af9d09693783c3320c4249840212ee221",
+    "anli": "8e4813d81f46d313dac7892e1c28076917cfcdf9",
+    "wanli": "61c95318fd71c55b6ba355d76253254615f387ec",
+    "vitaminc": "be6febb761b0b2807687e61e0b5282e459df2fa0",
+    "scitail": "0cc4353235b289165dfde1c7c5d1be983f99ce44",
+    "squad_v2": "3ffb306f725f7d2ce8394bc1873b24868140c412",
+    "pubmedqa": "9001f2853fb87cab8d220904e0de81ac6973b318",
+    "qnli": "bcdcba79d07bc864c1c254ccfcedcce55bcc9a8c",
+    "paws": "161ece9501cf0a11f3e48bd356eaa82de46d6a09",
+    "tweet_offensive": "b3a375baf0f409c77e6bc7aa35102b7b3534f8be",
+    "tweet_hate": "b3a375baf0f409c77e6bc7aa35102b7b3534f8be",
+    "tweet_irony": "b3a375baf0f409c77e6bc7aa35102b7b3534f8be",
+    "yahoo": "6652a1e7c94f7260a0bfd0c9092dd48e2d536ea1",
+    "newsgroups": "f1b91292074e7cfb69be58b642d583ec262f30ed",
+    "dbpedia": "9abd46cf7fc8b4c64290f26993c540b92aa145ac",
+    "trec": "0a34640b3cac3affef6f0abdfb81e3d0ecffcf92",
+    "go_emotions": "add492243ff905527e67aeb8b80c082af02207c3",
+    "emotion": "cab853a1dbdf4c42c2b3ef2173804746df8825fe",
+    "amazon_reviews": "ec73b665e4be0f567b69d39425355401cfe0d29b",
+    "stsb": "ab7a5ac0e35aa22088bdcf23e7fd99b220e53308",
+    "tweet_sentiment": "b3a375baf0f409c77e6bc7aa35102b7b3534f8be",
+    "civil_comments": "f2970eb3a55777454c94069077cc8d9b5866312d"
+  },
+  "datasets": {
+    "mnli": {
+      "dataset": "nyu-mll/multi_nli",
+      "config": "default",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "validation_matched"
+      ],
+      "table_row": 1
+    },
+    "anli": {
+      "dataset": "facebook/anli",
+      "config": "plain_text",
+      "train_splits": [
+        "train_r1",
+        "train_r2",
+        "train_r3"
+      ],
+      "dev_splits": [
+        "dev_r1",
+        "dev_r2",
+        "dev_r3"
+      ],
+      "table_row": 2
+    },
+    "wanli": {
+      "dataset": "alisawuffles/WANLI",
+      "config": "default",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "test"
+      ],
+      "table_row": 3
+    },
+    "vitaminc": {
+      "dataset": "tals/vitaminc",
+      "config": "default",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "validation"
+      ],
+      "table_row": 4
+    },
+    "scitail": {
+      "dataset": "allenai/scitail",
+      "config": "tsv_format",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "validation"
+      ],
+      "table_row": 5
+    },
+    "squad_v2": {
+      "dataset": "rajpurkar/squad_v2",
+      "config": "squad_v2",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "validation"
+      ],
+      "table_row": 6
+    },
+    "pubmedqa": {
+      "dataset": "qiaojin/PubMedQA",
+      "config": "pqa_artificial",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [],
+      "table_row": 7
+    },
+    "qnli": {
+      "dataset": "nyu-mll/glue",
+      "config": "qnli",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "validation"
+      ],
+      "table_row": 8
+    },
+    "paws": {
+      "dataset": "google-research-datasets/paws",
+      "config": "labeled_final",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "validation"
+      ],
+      "table_row": 9
+    },
+    "tweet_offensive": {
+      "dataset": "cardiffnlp/tweet_eval",
+      "config": "offensive",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "validation"
+      ],
+      "table_row": 10
+    },
+    "tweet_hate": {
+      "dataset": "cardiffnlp/tweet_eval",
+      "config": "hate",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "validation"
+      ],
+      "table_row": 10
+    },
+    "tweet_irony": {
+      "dataset": "cardiffnlp/tweet_eval",
+      "config": "irony",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "validation"
+      ],
+      "table_row": 10
+    },
+    "yahoo": {
+      "dataset": "community-datasets/yahoo_answers_topics",
+      "config": "yahoo_answers_topics",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "test"
+      ],
+      "table_row": 11
+    },
+    "newsgroups": {
+      "dataset": "SetFit/20_newsgroups",
+      "config": "default",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "test"
+      ],
+      "table_row": 12
+    },
+    "dbpedia": {
+      "dataset": "fancyzhx/dbpedia_14",
+      "config": "dbpedia_14",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "test"
+      ],
+      "table_row": 13
+    },
+    "clinc": {
+      "dataset": "clinc/clinc_oos",
+      "config": "plus",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "validation"
+      ],
+      "table_row": 14
+    },
+    "massive_intent": {
+      "dataset": "SetFit/amazon_massive_intent_en-US",
+      "config": "default",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "validation"
+      ],
+      "table_row": 15
+    },
+    "massive_scenario": {
+      "dataset": "SetFit/amazon_massive_scenario_en-US",
+      "config": "default",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "validation"
+      ],
+      "table_row": 16
+    },
+    "trec": {
+      "dataset": "SetFit/TREC-QC",
+      "config": "default",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "test"
+      ],
+      "table_row": 17
+    },
+    "go_emotions": {
+      "dataset": "google-research-datasets/go_emotions",
+      "config": "simplified",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "validation"
+      ],
+      "table_row": 18
+    },
+    "emotion": {
+      "dataset": "dair-ai/emotion",
+      "config": "split",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "validation"
+      ],
+      "table_row": 19
+    },
+    "dailydialog": {
+      "dataset": "roskoN/dailydialog",
+      "config": "full",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "validation"
+      ],
+      "table_row": 20
+    },
+    "amazon_reviews": {
+      "dataset": "SetFit/amazon_reviews_multi_en",
+      "config": "default",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "validation"
+      ],
+      "table_row": 21
+    },
+    "stsb": {
+      "dataset": "sentence-transformers/stsb",
+      "config": "default",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "validation"
+      ],
+      "table_row": 22
+    },
+    "tweet_sentiment": {
+      "dataset": "cardiffnlp/tweet_eval",
+      "config": "sentiment",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "validation"
+      ],
+      "table_row": 23
+    },
+    "civil_comments": {
+      "dataset": "google/civil_comments",
+      "config": "default",
+      "train_splits": [
+        "train"
+      ],
+      "dev_splits": [
+        "validation"
+      ],
+      "table_row": 24
+    },
+    "hwu64": {
+      "dataset": "FastFit/hwu_64",
+      "config": "default",
+      "train_splits": [],
+      "dev_splits": [
+        "test"
+      ],
+      "table_row": 0
+    },
+    "rte": {
+      "dataset": "aps/super_glue",
+      "config": "rte",
+      "train_splits": [],
+      "dev_splits": [
+        "validation"
+      ],
+      "table_row": 0
+    },
+    "multirc": {
+      "dataset": "aps/super_glue",
+      "config": "multirc",
+      "train_splits": [],
+      "dev_splits": [
+        "validation",
+        "train"
+      ],
+      "table_row": 0
+    },
+    "app_reviews": {
+      "dataset": "sealuzh/app_reviews",
+      "config": "default",
+      "train_splits": [],
+      "dev_splits": [
+        "train"
+      ],
+      "table_row": 0
+    }
+  }
+}

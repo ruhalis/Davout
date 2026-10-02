@@ -1,0 +1,77 @@
+{
+  "state": "early_stopped",
+  "reason": "dev_xfer NLL rose at two consecutive evaluations (steps 1250 and 1500)",
+  "step": 1500,
+  "total_steps": 1500,
+  "stop_at": 1500,
+  "aux_weight": 0.5,
+  "lr": 1e-05,
+  "best": {
+    "step": 1000,
+    "dev_xfer_nll": 0.44664528383388813,
+    "nll": {
+      "dev_in": {
+        "c1": 0.5935206394370919,
+        "final": 0.34401378239744224
+      },
+      "dev_xfer": {
+        "c1": 0.7035471879544136,
+        "final": 0.44664528383388813
+      }
+    }
+  },
+  "base": {
+    "dev_in": {
+      "c1": 1.0744881180899686,
+      "final": 0.6775552471982572
+    },
+    "dev_xfer": {
+      "c1": 1.1523246175820303,
+      "final": 0.8167322429761467
+    }
+  },
+  "base_dev_xfer_nll": 0.8167322429761467,
+  "nonfinite_steps": 0,
+  "padded_tokens": 19112657,
+  "train_seconds": 3360.779890148915,
+  "peak_memory_gib": 23.951853275299072,
+  "model_dir": "/home/circle/davout/checkpoints/ftB/model",
+  "sanity_gate": {
+    "pass": true,
+    "tolerance": 0.01,
+    "max_final_diff": 0.0006683133980817102,
+    "in_loop_nll": {
+      "dev_in": {
+        "c1": 0.5935206394370919,
+        "final": 0.34401378239744224
+      },
+      "dev_xfer": {
+        "c1": 0.7035471879544136,
+        "final": 0.44664528383388813
+      }
+    },
+    "served_nll": {
+      "dev_in": {
+        "c1": 0.5934240629303277,
+        "final": 0.34377293133195996
+      },
+      "dev_xfer": {
+        "c1": 0.7039759214706616,
+        "final": 0.4459769704358064
+      }
+    },
+    "abs_diff": {
+      "dev_in": {
+        "c1": 9.657650676420104e-05,
+        "final": 0.00024085106548227264
+      },
+      "dev_xfer": {
+        "c1": 0.00042873351624794775,
+        "final": 0.0006683133980817102
+      }
+    },
+    "served_dtype": "bfloat16",
+    "served_device": "cuda:0"
+  },
+  "tok_s": 5686.97077009501
+}

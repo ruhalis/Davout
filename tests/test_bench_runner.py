@@ -68,6 +68,28 @@ def test_run_id_is_stable() -> None:
     assert RunConfig("hrm", "boolq", device="cpu", batch_size=1, out_dir="x").run_id == RunConfig("hrm", "boolq").run_id
 
 
+def test_model_and_tag_change_the_run_id_only_when_set() -> None:
+    # without --model the ids (and so the existing results) are exactly as before
+    assert RunConfig("hrm", "boolq", "zero", model=None, tag=None).run_id == "hrm-boolq-zero-prefix-s0"
+    tuned = RunConfig("hrm", "boolq", "zero", model="/ckpt/ftA/model", tag="ftA")
+    assert tuned.run_id == "hrm-ftA-boolq-zero-prefix-s0"
+    assert RunConfig("hrm", "ag_news", "task", 5, prefix_lm=False, seed=2, model="m", tag="ft_B.1").run_id == (
+        "hrm-ft_B.1-ag_news-task5-causal-s2"
+    )
+    with pytest.raises(ValueError, match="model and tag go together"):
+        RunConfig("hrm", "boolq", model="/ckpt/ftA/model")
+    with pytest.raises(ValueError, match="model and tag go together"):
+        RunConfig("hrm", "boolq", tag="ftA")
+    with pytest.raises(ValueError, match="tag must be letters"):
+        RunConfig("hrm", "boolq", model="m", tag="ft-A")  # '-' separates the parts of a run id
+    with pytest.raises(ValueError, match="only applies to the hrm backend"):
+        RunConfig("openjev", "boolq", model="m", tag="x")
+    assert [c.run_id for c in suite_configs(tuned, ["boolq", "yelp"])][:2] == [
+        "hrm-ftA-boolq-zero-prefix-s0", "hrm-ftA-yelp-zero-prefix-s0",
+    ]  # fmt: skip
+    assert all(c.model == "/ckpt/ftA/model" for c in suite_configs(tuned, ["boolq"]))
+
+
 def test_config_validation() -> None:
     with pytest.raises(ValueError, match="backend"):
         RunConfig("gpt", "boolq")
@@ -147,6 +169,48 @@ def test_resume_refuses_different_settings(tmp_path: Path) -> None:
     # latency-only settings may change between sessions
     slower = RunConfig("hrm", "toy", "zero", out_dir=str(tmp_path), batch_size=1)
     run(slower, scorer=FakeScorer(), task_data=noul_task())
+
+
+def test_resume_guard_covers_the_model(tmp_path: Path) -> None:
+    task = noul_task()
+    tuned = RunConfig("hrm", "toy", "zero", out_dir=str(tmp_path), model="/ckpt/ftA/model", tag="ftA")
+    run_dir = run(tuned, scorer=FakeScorer(), task_data=task)
+    assert run_dir == tmp_path / "hrm-ftA-toy-zero-prefix-s0"
+    saved = json.loads((run_dir / "config.json").read_text())["config"]
+    assert (saved["model"], saved["tag"]) == ("/ckpt/ftA/model", "ftA")
+    run(tuned, scorer=LazyScorer(lambda: pytest.fail("the scorer must not be built")), task_data=task)
+
+    # the same tag pointed at other weights must not append to those results
+    other = RunConfig("hrm", "toy", "zero", out_dir=str(tmp_path), model="/ckpt/ftB/model", tag="ftA")
+    with pytest.raises(RuntimeError, match="different settings.*model: '/ckpt/ftA/model' -> '/ckpt/ftB/model'"):
+        run(other, scorer=FakeScorer(), task_data=task)
+
+    # stock-model runs are untouched: same directory as before, model recorded as None
+    plain = RunConfig("hrm", "toy", "zero", out_dir=str(tmp_path))
+    plain_dir = run(plain, scorer=FakeScorer(), task_data=task)
+    assert plain_dir == tmp_path / "hrm-toy-zero-prefix-s0"
+    assert json.loads((plain_dir / "config.json").read_text())["config"]["model"] is None
+    # a run recorded before the `model` field existed still resumes
+    config = json.loads((plain_dir / "config.json").read_text())
+    del config["config"]["model"], config["config"]["tag"]
+    (plain_dir / "config.json").write_text(json.dumps(config))
+    assert run(plain, scorer=FakeScorer(), task_data=task) == plain_dir
+
+
+def test_build_backend_passes_the_model(monkeypatch: pytest.MonkeyPatch) -> None:
+    import davout.backends.hrm as hrm
+
+    seen: list[tuple[tuple, dict]] = []
+
+    class Stub:
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
+            seen.append((args, kwargs))
+
+    monkeypatch.setattr(hrm, "HrmBackend", Stub)
+    runner.build_backend(RunConfig("hrm", "boolq", "zero", device="cpu", batch_size=2, max_tokens=512))
+    assert seen[-1] == ((), {"device": "cpu", "batch_size": 2, "max_tokens": 512, "prefix_lm": True})
+    runner.build_backend(RunConfig("hrm", "boolq", "zero", prefix_lm=False, model="/ckpt/ftA/model", tag="ftA"))
+    assert seen[-1][1]["model_id_or_path"] == "/ckpt/ftA/model" and seen[-1][1]["prefix_lm"] is False
 
 
 def test_task_shots_are_passed_as_demos(tmp_path: Path) -> None:
@@ -276,10 +340,48 @@ def test_run_suite_shares_backends_and_survives_failures(tmp_path: Path, monkeyp
     assert "message s0" in task_prompts[0].prefix
 
 
+def test_run_suite_does_not_share_a_backend_between_models(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(runner, "load_task_data", lambda cfg: noul_task())
+    built: list[str | None] = []
+
+    def build(cfg: RunConfig) -> FakeBackend:
+        built.append(cfg.model)
+        return FakeBackend(cfg.prefix_lm)
+
+    base = RunConfig("hrm", "boolq", "zero", out_dir=str(tmp_path))
+    tuned = RunConfig("hrm", "boolq", "zero", out_dir=str(tmp_path), model="/ckpt/ftA/model", tag="ftA")
+    done, failed = run_suite([base, tuned], build=build)
+    assert not failed and built == [None, "/ckpt/ftA/model"]
+    assert [d.name for d in done] == ["hrm-boolq-zero-prefix-s0", "hrm-ftA-boolq-zero-prefix-s0"]
+
+
+def test_cli_bench_model_and_tag(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture) -> None:
+    from davout import cli
+
+    seen: list[RunConfig] = []
+    monkeypatch.setattr(runner, "run", lambda cfg: seen.append(cfg) or Path(cfg.out_dir) / cfg.run_id)
+    common = ["--backend", "hrm", "--out", str(tmp_path), "--n-calib", "5", "--n-test", "5"]
+    assert cli.main(["bench", "run", "--task", "boolq", "--shots-mode", "zero", *common]) == 0
+    assert (seen[-1].model, seen[-1].tag, seen[-1].run_id) == (None, None, "hrm-boolq-zero-prefix-s0")
+    args = ["bench", "run", "--task", "boolq", "--shots-mode", "zero", "--model", "/ckpt/ftA/model", *common]
+    assert cli.main([*args, "--tag", "ftA"]) == 0
+    assert (seen[-1].model, seen[-1].tag) == ("/ckpt/ftA/model", "ftA")
+    assert capsys.readouterr().out.splitlines()[-1] == str(tmp_path / "hrm-ftA-boolq-zero-prefix-s0")
+    assert cli.main(args) == 1  # --model without --tag
+    assert "model and tag go together" in capsys.readouterr().err
+
+    suites: list[list[RunConfig]] = []
+    monkeypatch.setattr(runner, "run_suite", lambda cfgs: suites.append(list(cfgs)) or ([], []))
+    assert cli.main(["bench", "suite", "--tasks", "boolq,yelp", "--model", "/ckpt/ftB/model", "--tag", "ftB", *common]) == 0
+    assert {c.model for c in suites[-1]} == {"/ckpt/ftB/model"}
+    assert suites[-1][0].run_id == "hrm-ftB-boolq-zero-prefix-s0" and len(suites[-1]) == 8
+
+
 def test_bench_modules_import_without_heavy_dependencies() -> None:
     code = (
         "import sys, davout.cli, davout.scorer_nli, davout.bench.tasks, davout.bench.runner, davout.bench.report\n"
-        "bad = [m for m in ('torch', 'transformers', 'datasets', 'davout.engine') if m in sys.modules]\n"
+        "davout.cli._build_parser()\n"
+        "bad = [m for m in ('torch', 'transformers', 'datasets', 'davout.engine', 'davout.train.loop') if m in sys.modules]\n"
         "assert not bad, bad\n"
     )
     subprocess.run([sys.executable, "-c", code], check=True)

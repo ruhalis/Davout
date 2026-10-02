@@ -1,0 +1,171 @@
+{
+  "run_id": "hrm-ftA-banking77-zero-prefix-s0",
+  "backend": "hrm",
+  "task": "banking77",
+  "kind": "choice",
+  "shots_mode": "zero",
+  "k": 0,
+  "attention": "prefix",
+  "seed": 0,
+  "n_calib": 300,
+  "n_test": 300,
+  "complete": true,
+  "raw": {
+    "accuracy": 0.6233333333333333,
+    "nll": 1.7608318894200723,
+    "brier": 0.5353812294093194,
+    "ece": 0.06445191057452065,
+    "n": 300
+  },
+  "calibrated": {
+    "accuracy": 0.6233333333333333,
+    "nll": 1.7297011917087752,
+    "brier": 0.5350859056659798,
+    "ece": 0.06688646947621123,
+    "n": 300
+  },
+  "calibrator": {
+    "choice_T": 1.0,
+    "choice_two_stage_T": 1.1146860731414883,
+    "score_T": 1.0,
+    "noul_a": 1.0,
+    "noul_b": 0.0,
+    "meta": {
+      "run_id": "hrm-ftA-banking77-zero-prefix-s0",
+      "n": 300,
+      "split": "calib",
+      "kind": "choice"
+    }
+  },
+  "latency_ms": {
+    "p50": 518.7938234994363,
+    "p95": 565.9698684961768,
+    "mean": 512.1947017132334
+  },
+  "prompt_tokens_mean": 4801.906666666667,
+  "truncated": 0,
+  "stages": {
+    "two_stage": 300
+  },
+  "reliability": [
+    {
+      "lo": 0.0,
+      "hi": 0.06666666666666667,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.06666666666666667,
+      "hi": 0.13333333333333333,
+      "count": 0,
+      "confidence": null,
+      "accuracy": null
+    },
+    {
+      "lo": 0.13333333333333333,
+      "hi": 0.2,
+      "count": 9,
+      "confidence": 0.16540585649399786,
+      "accuracy": 0.0
+    },
+    {
+      "lo": 0.2,
+      "hi": 0.26666666666666666,
+      "count": 24,
+      "confidence": 0.22851349752548233,
+      "accuracy": 0.20833333333333334
+    },
+    {
+      "lo": 0.26666666666666666,
+      "hi": 0.3333333333333333,
+      "count": 19,
+      "confidence": 0.301521632864421,
+      "accuracy": 0.21052631578947367
+    },
+    {
+      "lo": 0.3333333333333333,
+      "hi": 0.4,
+      "count": 19,
+      "confidence": 0.3633402401650628,
+      "accuracy": 0.47368421052631576
+    },
+    {
+      "lo": 0.4,
+      "hi": 0.4666666666666667,
+      "count": 20,
+      "confidence": 0.43117095118837057,
+      "accuracy": 0.5
+    },
+    {
+      "lo": 0.4666666666666667,
+      "hi": 0.5333333333333333,
+      "count": 27,
+      "confidence": 0.4971944383884377,
+      "accuracy": 0.48148148148148145
+    },
+    {
+      "lo": 0.5333333333333333,
+      "hi": 0.6,
+      "count": 21,
+      "confidence": 0.5658858381567868,
+      "accuracy": 0.8095238095238095
+    },
+    {
+      "lo": 0.6,
+      "hi": 0.6666666666666666,
+      "count": 31,
+      "confidence": 0.6348166229146309,
+      "accuracy": 0.7096774193548387
+    },
+    {
+      "lo": 0.6666666666666666,
+      "hi": 0.7333333333333333,
+      "count": 25,
+      "confidence": 0.7028071344346148,
+      "accuracy": 0.72
+    },
+    {
+      "lo": 0.7333333333333333,
+      "hi": 0.8,
+      "count": 19,
+      "confidence": 0.7636544855139961,
+      "accuracy": 0.6842105263157895
+    },
+    {
+      "lo": 0.8,
+      "hi": 0.8666666666666667,
+      "count": 23,
+      "confidence": 0.8322623332765922,
+      "accuracy": 0.7391304347826086
+    },
+    {
+      "lo": 0.8666666666666667,
+      "hi": 0.9333333333333333,
+      "count": 22,
+      "confidence": 0.9062449165094278,
+      "accuracy": 0.9090909090909091
+    },
+    {
+      "lo": 0.9333333333333333,
+      "hi": 1.0,
+      "count": 41,
+      "confidence": 0.9728220113509491,
+      "accuracy": 0.9512195121951219
+    }
+  ],
+  "scorer": {
+    "name": "hrm-text-1b",
+    "model_id": "/home/circle/davout/checkpoints/ftA/model",
+    "device": "cuda:0",
+    "dtype": "bfloat16",
+    "max_tokens": 4096,
+    "batch_size": 8,
+    "prefix_lm": true,
+    "h_cycles": 2,
+    "l_cycles": 3,
+    "scorer": "letter",
+    "shots": 0,
+    "shortlist": 10
+  }
+}

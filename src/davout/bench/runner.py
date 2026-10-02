@@ -31,7 +31,7 @@ PROGRESS_EVERY = 25
 # Config fields that change what a run measures; a resumed run must match them.
 _RESULT_FIELDS = (
     "backend", "task", "jsonl", "shots_mode", "k", "prefix_lm",
-    "max_tokens", "shortlist", "n_calib", "n_test", "seed",
+    "max_tokens", "shortlist", "n_calib", "n_test", "seed", "model",
 )  # fmt: skip
 
 
@@ -54,10 +54,18 @@ class RunConfig:
     seed: int = 0
     out_dir: str = "results"
     jsonl: str | None = None  # path of the user's own decisions; replaces the task registry
+    model: str | None = None  # HRM model id or checkpoint path; None = the stock HRM-Text-1B
+    tag: str | None = None  # names a non-default model in the run id; required with `model`
 
     def __post_init__(self) -> None:
         if self.backend not in BACKENDS:
             raise ValueError(f"backend must be one of {BACKENDS}, got {self.backend!r}")
+        if self.model is not None and self.backend != "hrm":
+            raise ValueError("model only applies to the hrm backend")
+        if (self.model is None) != (self.tag is None):
+            raise ValueError("model and tag go together: a run with a non-default model needs a tag for its run id")
+        if self.tag is not None and not re.fullmatch(r"[A-Za-z0-9_.]+", self.tag):
+            raise ValueError(f"tag must be letters, digits, '_' or '.', got {self.tag!r}")
         if self.shots_mode not in SHOTS_MODES:
             raise ValueError(f"shots_mode must be one of {SHOTS_MODES}, got {self.shots_mode!r}")
         if self.backend == "openjev":  # an NLI classifier takes no demonstrations
@@ -84,9 +92,12 @@ class RunConfig:
 
     @property
     def run_id(self) -> str:
-        """Deterministic id, e.g. `hrm-boolq-task5-prefix-s0` or `openjev-boolq-s0`."""
+        """Deterministic id, e.g. `hrm-boolq-task5-prefix-s0` or `openjev-boolq-s0`.
+
+        A run with a non-default model carries its tag: `hrm-ftA-boolq-zero-prefix-s0`.
+        """
         task = re.sub(r"[^A-Za-z0-9_.]+", "_", self.task).strip("_") or "task"
-        parts = [self.backend, task]
+        parts = [self.backend] + ([self.tag] if self.tag else []) + [task]
         if self.backend == "hrm":
             parts += [self.shots_label, self.attention or ""]
         return "-".join(parts + [f"s{self.seed}"])
@@ -115,8 +126,9 @@ def build_backend(cfg: RunConfig) -> Any:
     """The HRM backend for `cfg` (imports torch and loads the weights)."""
     from davout.backends.hrm import HrmBackend
 
+    which = {} if cfg.model is None else {"model_id_or_path": cfg.model}
     return HrmBackend(
-        device=cfg.device, batch_size=cfg.batch_size, max_tokens=cfg.max_tokens, prefix_lm=cfg.prefix_lm
+        device=cfg.device, batch_size=cfg.batch_size, max_tokens=cfg.max_tokens, prefix_lm=cfg.prefix_lm, **which
     )
 
 
@@ -176,6 +188,7 @@ def _check_resume(cfg: RunConfig, run_dir: Path) -> None:
         return
     old = json.loads(path.read_text()).get("config", {})
     new = asdict(cfg)
+    old.setdefault("model", None)  # runs recorded before `model` existed used the stock model
     diff = [f"{k}: {old.get(k)!r} -> {new[k]!r}" for k in _RESULT_FIELDS if k in old and old[k] != new[k]]
     if diff:
         raise RuntimeError(
@@ -312,7 +325,7 @@ def run_suite(
 ) -> tuple[list[Path], list[tuple[str, str]]]:
     """Run every config; returns (run directories, [(run_id, error)] for the runs that failed).
 
-    HRM runs with the same attention mode share one loaded backend; only one
+    HRM runs with the same model and attention mode share one loaded backend; only one
     backend is kept in memory at a time. A failed run does not stop the rest.
     """
     done: list[Path] = []
@@ -320,7 +333,7 @@ def run_suite(
     live: dict[str, Any] = {"key": None, "backend": None}
 
     def backend_for(cfg: RunConfig) -> Any:
-        key = (cfg.prefix_lm, cfg.device, cfg.batch_size, cfg.max_tokens)
+        key = (cfg.model, cfg.prefix_lm, cfg.device, cfg.batch_size, cfg.max_tokens)
         if live["key"] != key:
             live["backend"] = None
             gc.collect()

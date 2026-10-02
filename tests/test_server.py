@@ -239,6 +239,29 @@ def test_cli_ask(tmp_path, monkeypatch, capsys) -> None:
     assert json.loads(capsys.readouterr().out) == CANNED
 
 
+def test_cli_model_flag_reaches_the_engine(tmp_path, monkeypatch, capsys) -> None:
+    path = tmp_path / "req.json"
+    path.write_text(json.dumps(VALID))
+    built: list[dict] = []
+    stub = types.ModuleType("davout.engine")
+    stub.build_engine = lambda **kw: built.append(kw) or FakeEngine()  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "davout.engine", stub)
+    monkeypatch.delenv("DAVOUT_MODEL", raising=False)
+
+    assert cli.main(["ask", str(path)]) == 0
+    assert built[-1]["model"] is None  # the stock model
+    assert cli.main(["ask", str(path), "--model", "checkpoints/ftA/model"]) == 0
+    assert built[-1]["model"] == "checkpoints/ftA/model"
+
+    served: list[Any] = []
+    monkeypatch.setattr(server, "serve", lambda factory, **kw: served.append((factory, kw)))
+    assert cli.main(["serve", "--model", "checkpoints/ftB/model", "--port", "9"]) == 0
+    factory, kw = served[-1]
+    assert kw["port"] == 9 and isinstance(factory(), FakeEngine)
+    assert built[-1]["model"] == "checkpoints/ftB/model" and built[-1]["device"] == "auto"
+    capsys.readouterr()
+
+
 def test_cli_ask_prompt_too_long(tmp_path, monkeypatch, capsys) -> None:
     path = tmp_path / "req.json"
     path.write_text(json.dumps(VALID))
