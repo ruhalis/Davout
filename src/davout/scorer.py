@@ -21,6 +21,8 @@ class RawScore:
     # same shape per H cycle when the backend provides it (None for two-stage choice)
     cycle_logits: list[list[float]] | None
     stage: str  # "letter" or "two_stage"
+    # two-stage choice: log-probability of each option after the first (candidate) stage
+    stage1_logits: list[float] | None = None
 
 
 def _logsumexp(xs: Sequence[float]) -> float:
@@ -144,6 +146,7 @@ class LetterScorer:
                 any(r.truncated for r in outs) or r2.truncated,
                 None,
                 "two_stage",
+                list(log_p1),
             )
         return results  # type: ignore[return-value]
 

@@ -94,6 +94,13 @@ def _fake_row(name: str, split: str, i: int) -> dict[str, Any]:
                 "answer": f"Person {i}", "label": i % 2}  # fmt: skip
     if name == "app_reviews":
         return {"review": f"App review {tag}: " + ("works fine on my phone, thanks a lot" if i % 3 else "ok"), "star": 1 + i % 5}
+    if name == "ledgar":
+        return {"text": f"The parties agree that clause {tag} shall survive termination.", "label": i % 100}
+    if name == "fewrel":
+        raw, relation, _desc = S.FEWREL_RELATIONS[i % 64]
+        return {"relation": raw, "tokens": ["Alpha", str(i), "of", split, "is", "linked", "to", "Beta", "City", "."],
+                "head": {"text": "alpha", "type": "Q1", "indices": [[0, 1]]},
+                "tail": {"text": "beta city", "type": "Q2", "indices": [[7, 8]]}, "names": [relation, "described"]}  # fmt: skip
     raise AssertionError(name)
 
 
@@ -696,9 +703,82 @@ def test_trainer_reader_accepts_the_files(built: tuple[Path, dict]) -> None:
         assert len(rows) == len(rows_of(built, name))
 
 
+def test_hard_negatives_and_shortlists_use_similar_names() -> None:
+    labels = S.LEDGAR
+    gold = labels.by_raw()["Waivers"]
+    near = data.name_neighbours(labels)["Waivers"]
+    near_names = {label.name for label in near}
+    assert len(near) == data.NAME_NEIGHBOURS and gold not in near
+    assert {"No Waivers", "Waiver Of Jury Trials"} <= {label.raw for label in near[:3]}
+    hard = 0
+    for seed in range(400):
+        ex = data.candidate_example("clause", "bare", gold, labels, random.Random(seed), False)
+        assert ex["label"] == 0 and ex["candidate"].lower() != "waivers"
+        hard += ex["meta"]["sibling_negative"]
+        assert not ex["meta"]["sibling_negative"] or ex["candidate"].lower() in near_names
+    assert 0.4 * 400 < hard < 0.6 * 400  # half of the negatives have a name close to the gold one
+    positions: Counter[int] = Counter()
+    for seed in range(200):
+        ex = data.shortlist_example("clause", "bare", gold, labels, random.Random(seed))
+        names = [n.lower() for n in ex["question"]["criteria"]]
+        assert len(names) == data.SHORTLIST_OPTIONS and names[ex["label"]] == "waivers"
+        assert sum(n in near_names for n in names) >= data.SHORTLIST_NEAR
+        assert not set(names) & {n.lower() for n in S.OTHER_NAMES}
+        positions[ex["label"]] += 1
+    assert len(positions) == data.SHORTLIST_OPTIONS  # the gold option moves around
+
+
+def test_candidate_recipe_builds_candidate_rows_and_shortlists(tmp_path: Path, built: tuple[Path, dict]) -> None:
+    manifest = run_build(tmp_path, scale=0.02, recipe="cand_v1")
+    assert manifest["recipe"] == "cand_v1" and "recipe" not in built[1]
+    rows = read(tmp_path / "train.jsonl")
+    assert Counter((r["source"], r["family"]) for r in rows) == {
+        ("ledgar", "candidate"): 140, ("ledgar", "choice"): 60, ("fewrel", "candidate"): 140, ("fewrel", "choice"): 60,
+    }  # fmt: skip
+    assert all(len(r["question"]["criteria"]) == 10 for r in rows if r["family"] == "choice")
+    assert manifest["train"]["positive_rate"]["candidate"] == pytest.approx(0.25)
+    relation = next(r for r in rows if r["source"] == "fewrel")
+    text = data.render(relation).text.lower()
+    assert "subject" in text and "object" in text and "beta city" in text
+    assert {r["source"] for r in read(tmp_path / "dev_in.jsonl")} == {"ledgar", "fewrel"}
+    # dev_xfer is the one of the default recipe, and the default mix never sees the new sources
+    assert (tmp_path / "dev_xfer.jsonl").read_bytes() == (built[0] / "dev_xfer.jsonl").read_bytes()
+    assert not {"ledgar", "fewrel"} & (set(S.SOURCES) | set(built[1]["train"]["per_source"]))
+    assert not {r["id"] for r in rows} & {r["id"] for r in read(tmp_path / "dev_in.jsonl")}
+    fmt = pytest.importorskip("davout.train.format")
+    assert len(fmt.read_rows(tmp_path / "train.jsonl")) == len(rows)
+
+
+def test_candidate_mix_recipe_adds_default_rows_in_proportion(tmp_path: Path) -> None:
+    mix = S.CAND_MIX_SOURCES
+    v1_part = {n: s for n, s in mix.items() if n in S.SOURCES}
+    assert sum(sum(s.counts.values()) for s in v1_part.values()) == 20_000 and set(v1_part) == set(S.SOURCES)
+    per_family: Counter[str] = Counter()
+    for src in v1_part.values():
+        per_family.update(src.counts)
+        assert src.dev_n == 0 and set(src.counts) == set(S.SOURCES[src.name].counts)
+    full: Counter[str] = Counter()
+    for src in S.SOURCES.values():
+        full.update(src.counts)
+    assert all(abs(per_family[f] - full[f] * 20_000 / 96_000) <= 3 for f in full)
+    assert S.SOURCES["mnli"].counts == {"nli": 10_000} and S.SOURCES["mnli"].dev_n == 84  # the default mix is untouched
+
+    run_build(tmp_path / "cand", scale=0.05, recipe="cand_v1")
+    manifest = run_build(tmp_path / "mix", scale=0.05, recipe="cand_mix_v1")
+    rows = read(tmp_path / "mix" / "train.jsonl")
+    assert abs(len(rows) - 2 * 1000) <= 5 and manifest["shortfall"] == {}  # each cell is rounded at this scale
+    new = sorted(json.dumps(r, sort_keys=True) for r in rows if r["source"] in S.CAND_SOURCES)
+    assert new == sorted(json.dumps(r, sort_keys=True) for r in read(tmp_path / "cand" / "train.jsonl"))
+    assert len({r["source"] for r in rows[:100]}) >= 6  # shuffled across both parts
+    for name in ("dev_in.jsonl", "dev_xfer.jsonl"):
+        assert (tmp_path / "mix" / name).read_bytes() == (tmp_path / "cand" / name).read_bytes()
+
+
 def test_build_rejects_bad_arguments(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="unknown source"):
         run_build(tmp_path, sources=["mnli", "nope"])
+    with pytest.raises(ValueError, match="unknown recipe"):
+        run_build(tmp_path, recipe="nope")
     with pytest.raises(ValueError, match="scale"):
         run_build(tmp_path, scale=0)
 

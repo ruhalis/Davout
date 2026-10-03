@@ -834,8 +834,10 @@ def test_cli_train_build_data(monkeypatch, capsys) -> None:
     stub.build = lambda out_dir, **kw: seen.append((out_dir, kw))  # type: ignore[attr-defined]
     monkeypatch.setitem(sys.modules, "davout.train.data", stub)
     assert cli.main(["train", "build-data", "--out", "data/v1"]) == 0
-    assert seen[-1] == ("data/v1", {"seed": 0, "scale": 1.0, "sources": None})
+    assert seen[-1] == ("data/v1", {"seed": 0, "scale": 1.0, "sources": None, "recipe": "v1"})
     assert cli.main(["train", "build-data", "--out", "x", "--seed", "2", "--scale", "0.1", "--sources", "mnli, anli"]) == 0
-    assert seen[-1] == ("x", {"seed": 2, "scale": 0.1, "sources": ["mnli", "anli"]})
+    assert seen[-1] == ("x", {"seed": 2, "scale": 0.1, "sources": ["mnli", "anli"], "recipe": "v1"})
+    assert cli.main(["train", "build-data", "--out", "c", "--recipe", "cand_v1"]) == 0
+    assert seen[-1] == ("c", {"seed": 0, "scale": 1.0, "sources": None, "recipe": "cand_v1"})
     with pytest.raises(SystemExit):
         cli.main(["train", "build-data"])  # --out is required

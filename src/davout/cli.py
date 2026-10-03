@@ -70,11 +70,14 @@ def _build_parser() -> argparse.ArgumentParser:
     build.add_argument("--seed", type=int, default=0)
     build.add_argument("--scale", type=float, default=1.0, help="fraction of the full example counts")
     build.add_argument("--sources", help="comma-separated source names (default: all)")
+    build.add_argument("--recipe", default="v1", help="training mix: v1 (96,000 rows, default), cand_v1 (candidate-stage experiment) or cand_mix_v1 (cand_v1 plus 20,000 v1 rows)")
     trun = tsub.add_parser("run", help="fine-tune on a built data directory; resumes an interrupted run")
     trun.add_argument("--data", required=True, help="directory with train.jsonl, dev_in.jsonl, dev_xfer.jsonl")
     trun.add_argument("--out", required=True, help="run directory (checkpoints, metrics, the exported model)")
     trun.add_argument("--aux-weight", type=float, default=0.0, help="weight of the cycle-1 loss (default: 0)")
     trun.add_argument("--lr", type=float, default=1e-5, help="peak learning rate")
+    trun.add_argument("--warmup", type=int, default=30, help="linear warmup steps")
+    trun.add_argument("--lr-min-ratio", type=float, default=0.1, help="the cosine ends at lr times this (1 = constant after warmup)")
     trun.add_argument("--steps", type=int, default=None, help="optimizer steps of the schedule (default: one epoch)")
     trun.add_argument("--batch", type=int, default=64, help="examples per optimizer step")
     trun.add_argument("--max-batch-tokens", type=int, default=8192, help="rows x longest row per micro-batch")
@@ -264,7 +267,7 @@ def _cmd_train_build(args: argparse.Namespace) -> int:
     from davout.train.data import build
 
     sources = [s.strip() for s in args.sources.split(",") if s.strip()] if args.sources else None
-    result = build(args.out, seed=args.seed, scale=args.scale, sources=sources)
+    result = build(args.out, seed=args.seed, scale=args.scale, sources=sources, recipe=args.recipe)
     if isinstance(result, (dict, list)):
         print(json.dumps(result, indent=2, default=str))
     elif result is not None:
@@ -280,6 +283,8 @@ def _cmd_train_run(args: argparse.Namespace) -> int:
         "out_dir": args.out,
         "aux_weight": args.aux_weight,
         "lr": args.lr,
+        "warmup": args.warmup,
+        "lr_min_ratio": args.lr_min_ratio,
         "steps": args.steps,
         "batch": args.batch,
         "max_batch_tokens": args.max_batch_tokens,

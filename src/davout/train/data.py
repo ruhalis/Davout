@@ -17,6 +17,7 @@ when a split is loaded.
 """
 from __future__ import annotations
 
+import functools
 import hashlib
 import json
 import math
@@ -67,6 +68,9 @@ NEWSGROUPS_MAX_CHARS = 1200
 APP_REVIEW_MIN_CHARS = 40
 MULTIRC_PER_PARAGRAPH = 2
 XFER_CHOICE_OPTIONS = 10
+SHORTLIST_OPTIONS = 10  # shortlist rows: as many options as the second stage of a large Choice compares
+SHORTLIST_NEAR = 6  # of the nine wrong options, how many come from the gold label's nearest names
+NAME_NEIGHBOURS = 15  # how many of the most similar label names count as hard negatives
 
 # Characters per token assumed when the HRM tokenizer is not available. Measured on the
 # 96,000 real train prompts: mean 3.44, 1st percentile 2.58, minimum 2.27 (manifest
@@ -194,6 +198,13 @@ def wrap_pair(first: str, second: str, rng: random.Random, labels: Sequence[tupl
         return {k1: first, k2: second}, "pair_json"
     l1, l2 = rng.choice(list(labels))
     return f"{l1}: {first}\n{l2}: {second}", "pair_labelled"
+
+
+def wrap_fields(values: Sequence[str], rng: random.Random, keys: Sequence[str], labels: Sequence[str]) -> tuple[Any, str]:
+    """Wrap a state made of named parts as a JSON object or as labelled lines."""
+    if rng.random() < P_PAIR_JSON:
+        return dict(zip(keys, values)), "fields_json"
+    return "\n".join(f"{label}: {value}" for label, value in zip(labels, values)), "fields_labelled"
 
 
 def noul_criteria(rng: random.Random, true_texts: Sequence[str], false_texts: Sequence[str]) -> tuple[dict[str, str] | None, str]:
@@ -363,14 +374,53 @@ def choice_example(state: Any, wrapper: str, gold: Label | None, labels: LabelSe
     return {"state": state, "question": question, "label": label, "meta": meta}
 
 
+def _trigrams(name: str) -> frozenset[str]:
+    padded = f"  {name.lower()} "
+    return frozenset(padded[i : i + 3] for i in range(len(padded) - 2))
+
+
+@functools.lru_cache(maxsize=None)
+def name_neighbours(labels: LabelSet) -> dict[str, tuple[Label, ...]]:
+    """For each label (by `raw`), the NAME_NEIGHBOURS other labels with the most similar names.
+
+    Similarity is the Jaccard overlap of character trigrams; ties keep the label order.
+    """
+    grams = [_trigrams(label.name) for label in labels.labels]
+    out: dict[str, tuple[Label, ...]] = {}
+    for i, label in enumerate(labels.labels):
+        sim = [len(grams[i] & g) / len(grams[i] | g) for g in grams]
+        order = sorted((j for j in range(len(grams)) if j != i), key=lambda j: (-sim[j], j))
+        out[label.raw] = tuple(labels.labels[j] for j in order[:NAME_NEIGHBOURS])
+    return out
+
+
 def _wrong_label(golds: Sequence[Label], labels: LabelSet, rng: random.Random) -> tuple[Label, bool]:
-    """A label that is not gold; half the time from the gold label's parent group if there is one."""
+    """A label that is not gold; half the time a hard one: from the gold label's parent group if
+    there is one, or (label sets marked `hard`) one of the labels with the most similar names."""
     pool = [label for label in labels.labels if label not in golds]
     groups = {g.group for g in golds if g.group}
     siblings = [label for label in pool if label.group in groups]
+    if labels.hard:
+        near = {n.raw for g in golds for n in name_neighbours(labels)[g.raw]}
+        siblings = [label for label in pool if label.raw in near]
     if siblings and rng.random() < SIBLING_NEGATIVE_RATE:
         return rng.choice(siblings), True
     return rng.choice(pool), False
+
+
+def shortlist_example(state: Any, wrapper: str, gold: Label, labels: LabelSet, rng: random.Random) -> dict[str, Any]:
+    """A choice shaped like the second stage of a large Choice: the gold option among nine wrong
+    ones, SHORTLIST_NEAR of them drawn from the labels with the most similar names."""
+    style = rng.choice(NAME_STYLES)
+    near = rng.sample(name_neighbours(labels)[gold.raw], SHORTLIST_NEAR)
+    rest = [label for label in labels.labels if label is not gold and label not in near]
+    real = [gold] + near + rng.sample(rest, SHORTLIST_OPTIONS - 1 - len(near))
+    rng.shuffle(real)
+    criteria, desc_mode = _criteria(real, style, any(label.desc for label in labels.labels), None, rng)
+    question = {"type": "choice", "instructions": rng.choice(labels.choice_instructions), "criteria": criteria}
+    meta = {"k": len(criteria), "descriptions": desc_mode, "names": style, "nota": False, "other": False,
+            "shortlist": True, "wrapper": wrapper}  # fmt: skip
+    return {"state": state, "question": question, "label": list(criteria).index(styled(gold, style)), "meta": meta}
 
 
 def candidate_example(state: Any, wrapper: str, gold: Label | None, labels: LabelSet, rng: random.Random, want_true: bool, k: int | None = None) -> dict[str, Any]:
@@ -642,6 +692,26 @@ def normalise(source: str, row: Mapping[str, Any], rng: random.Random) -> dict[s
         if len(text) < APP_REVIEW_MIN_CHARS:
             return "too_short"
         return _text_item(text, level=int(row["star"]) - 1)
+    if source == "ledgar":
+        gold = _class_name(row["label"], S.LEDGAR_NAMES)
+        if gold is None:
+            return "unlabelled"
+        return _text_item(row["text"], golds={"provision": [S.LEDGAR.by_raw()[gold]]})
+    if source == "fewrel":
+        gold = S.FEWREL_BY_PROPERTY.get(row["relation"])
+        tokens = [str(t) for t in row["tokens"]]
+
+        def mention(entity: Mapping[str, Any]) -> str:  # the first mention, as written in the sentence
+            spans = entity["indices"]
+            return _clean(" ".join(tokens[i] for i in spans[0] if 0 <= i < len(tokens))) if spans else ""
+
+        sentence, head, tail = _clean(" ".join(tokens)), mention(row["head"]), mention(row["tail"])
+        if gold is None:
+            return "unlabelled"
+        if not sentence or not head or not tail:
+            return "empty_text"
+        return {"text": sentence, "fields": (sentence, head, tail), "golds": {"relation": [gold]},
+                "keys": (_key(sentence, head, tail),)}  # fmt: skip
     raise ValueError(f"unknown source {source!r}")
 
 
@@ -732,8 +802,13 @@ def make_example(source: str, family: str, item: Mapping[str, Any], rng: random.
         return score_example(state, wrapper, item["level"], source, rng)
     setname, labels = _labelset(source, family, item, rng)
     golds: list[Label] = item["golds"][setname]
-    state, wrapper, _ = wrap_text(item["text"], _style(source), rng, item.get("extra"))
-    if family == "choice":
+    if "fields" in item:
+        state, wrapper = wrap_fields(item["fields"], rng, *S.RELATION_FIELDS)
+    else:
+        state, wrapper, _ = wrap_text(item["text"], _style(source), rng, item.get("extra"))
+    if family == "choice" and labels.hard:
+        ex = shortlist_example(state, wrapper, golds[0], labels, rng)
+    elif family == "choice":
         ex = choice_example(state, wrapper, golds[0] if golds else None, labels, rng)
     elif family == "candidate":
         ex = candidate_example(state, wrapper, golds[0] if golds else None, labels, rng, bool(want_true))
@@ -875,7 +950,8 @@ def check_registry() -> None:
     """Static guards: excluded datasets, the CLINC exclusion list, label-set sanity, wording."""
     instructions, yelp, bench_ids = benchmark_texts()
     excluded = set(S.EXCLUDED_DATASETS) | bench_ids
-    for src in list(S.SOURCES.values()) + list(S.XFER_SOURCES.values()):
+    recipes = list({src.name: src for registry in S.RECIPES.values() for src in registry.values()}.values())
+    for src in recipes + list(S.XFER_SOURCES.values()):
         _require(src.dataset not in excluded, f"{src.name}: dataset {src.dataset} is excluded")
         _require((src.dataset, src.config) not in S.EXCLUDED_CONFIGS, f"{src.name}: config {src.config} is excluded")
     _require(len(S.CLINC_EXCLUDED) == 32, "the CLINC exclusion list must hold 32 intents")
@@ -885,8 +961,10 @@ def check_registry() -> None:
     _require(sum(s.dev_n for s in S.SOURCES.values()) == DEV_IN_TOTAL, "dev_in must total 2,000")
     others = {_norm_text(n) for n in S.OTHER_NAMES}
     wording: list[str] = [S.XFER_MULTIRC_INSTRUCTIONS, S.XFER_APP_REVIEWS_INSTRUCTIONS]
-    for src in list(S.SOURCES) + list(S.XFER_SOURCES):
+    for src in [s.name for s in recipes] + list(S.XFER_SOURCES):
         for name, labels in S.label_sets(src).items():
+            _require(not labels.hard or len(labels.labels) > max(NAME_NEIGHBOURS, SHORTLIST_OPTIONS),
+                     f"{src}/{name}: too few labels for hard negatives")  # fmt: skip
             for style in NAME_STYLES:
                 names = [styled(label, style) for label in labels.labels]
                 _require(len(set(names)) == len(names), f"{src}/{name}: {style} option names collide")
@@ -1079,6 +1157,14 @@ def verify_source(src: Source, split: str, rows: Any) -> dict[str, Any]:
         out["paragraphs"] = len(set(_column(rows, "paragraph")))
     elif name == "app_reviews":
         out["star"] = _expect_values(rows, "star", range(1, 6), where, exact)
+    elif name == "ledgar":
+        out["label"] = _expect_names(rows, "label", S.LEDGAR_NAMES, where)
+    elif name == "fewrel":
+        counts = _expect_values(rows, "relation", list(S.FEWREL_BY_PROPERTY), where, exact)
+        named = {(r, n[0]) for r, n in zip(_column(rows, "relation"), _column(rows, "names"))}
+        expected = {(prop, relation) for prop, relation, _desc in S.FEWREL_RELATIONS}
+        _require(named <= expected, f"{where}: unexpected relation names {sorted(named - expected)[:5]}")
+        out["relation"] = f"{len(counts)} of the 64 registry relations occur, each under its registry name"
     return out
 
 
@@ -1338,6 +1424,7 @@ def build(
     scale: float = 1.0,
     sources: Sequence[str] | None = None,
     *,
+    recipe: str = "v1",
     loader: Callable[[Source, str], Any] | None = None,
     token_counter: Callable[[str], int] | None = None,
 ) -> dict:
@@ -1345,13 +1432,19 @@ def build(
 
     `scale` multiplies every per-source count, the dev sets included (1.0 = 96,000 train
     rows, 2,000 dev_in, about 1,080 dev_xfer). `sources` restricts the build to the named
-    registry entries (training and dev_xfer sources alike). `loader(source, split)` replaces
+    registry entries (training and dev_xfer sources alike). `recipe` names the training mix
+    (`S.RECIPES`): "v1" is the 96,000-row spec, "cand_v1" the 20,000-row candidate-stage
+    experiment and "cand_mix_v1" those rows plus 20,000 of the "v1" mix; the dev_xfer of
+    every recipe is the one of "v1". `loader(source, split)` replaces
     the Hugging Face loader and `token_counter(prompt_text)` the HRM tokenizer; both exist
     for tests.
     """
     if scale <= 0:
         raise ValueError("scale must be > 0")
-    known = {**S.SOURCES, **S.XFER_SOURCES}
+    if recipe not in S.RECIPES:
+        raise ValueError(f"unknown recipe {recipe!r}; available: {', '.join(S.RECIPES)}")
+    registry = S.RECIPES[recipe]
+    known = {**registry, **S.XFER_SOURCES}
     selected = list(known) if sources is None else list(dict.fromkeys(sources))
     unknown = [name for name in selected if name not in known]
     if unknown:
@@ -1363,10 +1456,10 @@ def build(
     out_dir.mkdir(parents=True, exist_ok=True)
     deviations: list[str] = []
 
-    train_names = [n for n in S.SOURCES if n in selected]
+    train_names = [n for n in registry if n in selected]
     xfer_names = [n for n in S.XFER_SOURCES if n in selected]
-    counts = {n: dict(S.SOURCES[n].counts) for n in train_names}
-    dev_n = {n: S.SOURCES[n].dev_n for n in train_names}
+    counts = {n: dict(registry[n].counts) for n in train_names}
+    dev_n = {n: registry[n].dev_n for n in train_names}
 
     # The spec's fallback: without a confirmed "question" act, dailydialog's rows go to yahoo.
     if "dailydialog" in counts:
@@ -1394,7 +1487,8 @@ def build(
     if "hwu64" in xfer_names:
         texts: set[str] = set()
         for name in ("massive_intent", "clinc"):
-            if name in counts:
+            # another recipe continues from a model trained on "v1", so its dev_xfer stays that of "v1"
+            if name in counts or recipe != "v1":
                 src = S.SOURCES[name]
                 for split in src.train_splits:
                     texts.update(_key(_clean(t)) for t in _column(b.pool(src, split).rows, "text"))
@@ -1417,7 +1511,7 @@ def build(
 
     dev: list[dict[str, Any]] = []
     for name, families in _dev_alloc(counts, dev_n, scale).items():
-        src = S.SOURCES[name]
+        src = registry[name]
         splits = src.dev_splits or src.train_splits
         for family, n in families.items():
             for split, share in _split_proportional(n, dict.fromkeys(splits, 1.0)).items():
@@ -1425,7 +1519,7 @@ def build(
 
     train: list[dict[str, Any]] = []
     for name in train_names:
-        src = S.SOURCES[name]
+        src = registry[name]
         for family, n in counts[name].items():
             for split, share in _split_proportional(_scaled(n, scale), dict.fromkeys(src.train_splits, 1.0)).items():
                 b.collect("train", src, family, split, share, train)
@@ -1461,7 +1555,7 @@ def build(
             f"{name}.jsonl": {"rows": len(rows_), "sha256": hashlib.sha256((out_dir / f"{name}.jsonl").read_bytes()).hexdigest()}
             for name, rows_ in (("train", train), ("dev_in", dev), ("dev_xfer", xfer))
         },
-        "spec_counts": {n: dict(S.SOURCES[n].counts) for n in S.SOURCES},
+        "spec_counts": {n: dict(registry[n].counts) for n in registry},
         "train": _summary(train),
         "dev_in": _summary(dev),
         "dev_xfer": _summary(xfer),
@@ -1502,5 +1596,7 @@ def build(
         "datasets": {n: {"dataset": s.dataset, "config": s.config, "train_splits": list(s.train_splits),
                          "dev_splits": list(s.dev_splits), "table_row": s.number} for n, s in known.items() if n in selected},  # fmt: skip
     }
+    if recipe != "v1":
+        manifest = {"recipe": recipe, **manifest}
     (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return manifest

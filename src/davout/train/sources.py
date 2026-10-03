@@ -10,7 +10,7 @@ rows); the builder re-checks every label mapping against the loaded data.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Mapping
 
 # -- data classes -----------------------------------------------------------------------
@@ -48,6 +48,7 @@ class LabelSet:
     true_criteria: tuple[str, ...] = ()  # "Yes" text for a label without a description
     false_criteria: tuple[str, ...] = ()  # "No" text
     quote_names: bool = False  # {p} is the styled option name, not a phrase
+    hard: bool = False  # negatives come from the most similar label names; choice rows are ten-option shortlists
 
     def by_raw(self) -> dict[str, Label]:
         return {label.raw: label for label in self.labels}
@@ -596,6 +597,123 @@ HWU64 = LabelSet(
     choice_instructions=("Which intent matches the user's message?",),
 )
 
+# coastalcph/lex_glue "ledgar": ClassLabel order of the 100 provision types (read 2026-10-02)
+LEDGAR_NAMES: tuple[str, ...] = (
+    "Adjustments", "Agreements", "Amendments", "Anti-Corruption Laws", "Applicable Laws", "Approvals",
+    "Arbitration", "Assignments", "Assigns", "Authority", "Authorizations", "Base Salary", "Benefits",
+    "Binding Effects", "Books", "Brokers", "Capitalization", "Change In Control", "Closings",
+    "Compliance With Laws", "Confidentiality", "Consent To Jurisdiction", "Consents", "Construction",
+    "Cooperation", "Costs", "Counterparts", "Death", "Defined Terms", "Definitions", "Disability",
+    "Disclosures", "Duties", "Effective Dates", "Effectiveness", "Employment", "Enforceability",
+    "Enforcements", "Entire Agreements", "Erisa", "Existence", "Expenses", "Fees", "Financial Statements",
+    "Forfeitures", "Further Assurances", "General", "Governing Laws", "Headings", "Indemnifications",
+    "Indemnity", "Insurances", "Integration", "Intellectual Property", "Interests", "Interpretations",
+    "Jurisdictions", "Liens", "Litigations", "Miscellaneous", "Modifications", "No Conflicts",
+    "No Defaults", "No Waivers", "Non-Disparagement", "Notices", "Organizations", "Participations",
+    "Payments", "Positions", "Powers", "Publicity", "Qualifications", "Records", "Releases", "Remedies",
+    "Representations", "Sales", "Sanctions", "Severability", "Solvency", "Specific Performance",
+    "Submission To Jurisdiction", "Subsidiaries", "Successors", "Survival", "Tax Withholdings", "Taxes",
+    "Terminations", "Terms", "Titles", "Transactions With Affiliates", "Use Of Proceeds", "Vacations",
+    "Venues", "Vesting", "Waiver Of Jury Trials", "Waivers", "Warranties", "Withholdings",
+)  # fmt: skip
+
+LEDGAR = LabelSet(
+    labels=tuple(Label(raw, raw.lower()) for raw in LEDGAR_NAMES),
+    choice_instructions=(
+        "Which type of contract provision is this?",
+        "What is the subject of this contract clause?",
+        "Which heading fits this provision best?",
+        "Classify the contract clause by its topic.",
+        "Under which section title would this provision appear in a contract?",
+    ),
+    hard=True,
+)
+
+# thunlp/few_rel "train_wiki": (Wikidata property, its name in the `names` column, one-line description)
+FEWREL_RELATIONS: tuple[tuple[str, str, str], ...] = (
+    ("P6", "head of government", "the object leads the government of the subject, a city, state or country"),
+    ("P17", "country", "the object is the sovereign state the subject lies in or belongs to"),
+    ("P22", "father", "the object is the father of the subject"),
+    ("P27", "country of citizenship", "the object is the country the subject is a citizen of"),
+    ("P31", "instance of", "the subject is a particular example of the class named by the object"),
+    ("P39", "position held", "the object is a post or public office the subject holds or held"),
+    ("P57", "director", "the object directed the subject, a film, series or play"),
+    ("P58", "screenwriter", "the object wrote the script of the subject"),
+    ("P84", "architect", "the object designed the subject, a building"),
+    ("P86", "composer", "the object wrote the music of the subject"),
+    ("P101", "field of work", "the object is the specialisation of the subject, a person or organisation"),
+    ("P102", "member of political party", "the object is the political party the subject belongs to"),
+    ("P105", "taxon rank", "the object is the level of the subject in the taxonomic hierarchy"),
+    ("P106", "occupation", "the object is the profession of the subject"),
+    ("P118", "league", "the object is the league the subject, a team or player, plays in"),
+    ("P123", "publisher", "the object published the subject, a book, periodical, game or program"),
+    ("P127", "owned by", "the object is the owner of the subject"),
+    ("P131", "located in the administrative territorial entity",
+     "the subject lies in the object, an administrative area such as a city, county or state"),
+    ("P135", "movement", "the object is an artistic, literary or philosophical movement the subject belongs to"),
+    ("P136", "genre", "the object is the genre of the subject, a creative work or an artist"),
+    ("P137", "operator", "the object operates the subject, a facility, service or piece of equipment"),
+    ("P140", "religion", "the object is the religion of the subject"),
+    ("P150", "contains administrative territorial entity",
+     "the object is a direct subdivision of the subject, an administrative area"),
+    ("P156", "followed by", "the object comes immediately after the subject in a series"),
+    ("P159", "headquarters location", "the object is the place where the subject, an organisation, has its headquarters"),
+    ("P175", "performer", "the object performs the subject, a role or a musical work"),
+    ("P176", "manufacturer", "the object makes the subject, a product"),
+    ("P178", "developer", "the object developed the subject, such as software or a game"),
+    ("P241", "military branch", "the object is the armed service the subject belongs to"),
+    ("P264", "record label", "the object is the label that releases the subject's recordings"),
+    ("P276", "location", "the object is the place where the subject, an object or event, is found or takes place"),
+    ("P306", "operating system", "the object is the operating system the subject runs on"),
+    ("P355", "subsidiary", "the object is a company or organisation controlled by the subject"),
+    ("P400", "platform", "the object is the platform the subject was developed for or released on"),
+    ("P403", "mouth of the watercourse", "the object is the body of water the subject, a river, drains into"),
+    ("P407", "language of work or name", "the object is the language of the subject, a creative work or a name"),
+    ("P449", "original network", "the object is the network that first aired the subject, a radio or television show"),
+    ("P460", "said to be the same as", "the subject and the object are said to be the same thing"),
+    ("P466", "occupant", "the object is a person or organisation that occupies the subject, a property"),
+    ("P495", "country of origin", "the object is the country the subject, a work or product, comes from"),
+    ("P527", "has part", "the object is a part of the subject"),
+    ("P551", "residence", "the object is the place where the subject lives or lived"),
+    ("P674", "characters", "the object is a character that appears in the subject, a work of fiction"),
+    ("P706", "located on terrain feature", "the subject lies on the landform or body of water named by the object"),
+    ("P710", "participant", "the object took part in the subject, an event or process"),
+    ("P740", "location of formation", "the object is the place where the subject, a group or organisation, was formed"),
+    ("P750", "distributor", "the object distributes the subject, a creative work"),
+    ("P800", "notable work", "the object is a significant work by the subject"),
+    ("P931", "place served by transport hub", "the object is the place served by the subject, an airport or station"),
+    ("P937", "work location", "the object is the place where the subject, a person, was active"),
+    ("P974", "tributary", "the object is a stream that flows into the subject, a river"),
+    ("P991", "successful candidate", "the object is the person elected in the subject, an election"),
+    ("P1001", "applies to jurisdiction",
+     "the subject, an institution, law or office, has authority over the territory named by the object"),
+    ("P1303", "instrument", "the object is the musical instrument the subject plays"),
+    ("P1344", "participant of", "the object is an event the subject took part in"),
+    ("P1346", "winner", "the object won the subject, a competition or event"),
+    ("P1408", "licensed to broadcast to", "the object is the place the subject, a station, is licensed to broadcast to"),
+    ("P1411", "nominated for", "the object is an award the subject was nominated for"),
+    ("P1435", "heritage designation", "the object is the heritage status of the subject, a cultural or natural site"),
+    ("P1877", "after a work by", "the object is the artist whose work the subject copies or is inspired by"),
+    ("P1923", "participating team", "the object is a team that took part in the subject, an event"),
+    ("P3373", "sibling", "the object is a brother or sister of the subject"),
+    ("P3450", "sports season of league or competition", "the subject is one season of the competition named by the object"),
+    ("P4552", "mountain range", "the object is the mountain range the subject belongs to"),
+)  # fmt: skip
+
+FEWREL = LabelSet(
+    labels=tuple(Label(name.replace(" ", "_"), name, desc=desc) for _prop, name, desc in FEWREL_RELATIONS),
+    choice_instructions=(
+        "Which relation holds between the subject and the object?",
+        "How is the subject related to the object according to the sentence?",
+        "What is the relation between the subject and the object?",
+        "Which relation does the sentence express between the subject and the object?",
+        "Classify the relation that links the subject to the object.",
+    ),
+    hard=True,
+)
+
+FEWREL_BY_PROPERTY: dict[str, Label] = {prop: label for (prop, _n, _d), label in zip(FEWREL_RELATIONS, FEWREL.labels)}
+
 # -- single-text wrappers ---------------------------------------------------------------
 
 STYLES: dict[str, TextStyle] = {
@@ -625,7 +743,11 @@ STYLES: dict[str, TextStyle] = {
     "dailydialog": TextStyle(("Message", "Utterance", "Speaker", "Text"), ("message", "utterance", "text"), "message"),
     "amazon_reviews": TextStyle(("Review", "Text", "Customer review"), ("review", "text", "feedback"), "review"),
     "civil_comments": TextStyle(("Comment", "Post", "Text", "Reply"), ("comment", "text", "post"), "comment"),
+    "ledgar": TextStyle(("Clause", "Provision", "Text", "Contract clause"), ("clause", "provision", "text"), "clause"),
 }  # fmt: skip
+
+# FewRel states name the sentence and the two entities: (JSON keys, line labels)
+RELATION_FIELDS = (("sentence", "subject", "object"), ("Sentence", "Subject", "Object"))
 
 # -- natural language inference ---------------------------------------------------------
 
@@ -1153,6 +1275,43 @@ SOURCES: dict[str, Source] = {
     )
 }  # fmt: skip
 
+# The candidate-stage experiment ("cand_v1"): two many-class sets, train splits only, turned into
+# candidate rows and ten-option shortlists with hard negatives. Never part of the default mix.
+CAND_SOURCES: dict[str, Source] = {
+    s.name: s
+    for s in (
+        Source("ledgar", 25, "coastalcph/lex_glue", "ledgar", ("train",), (), ("text", "label"),
+               {"candidate": 7_000, "choice": 3_000}, 100),
+        # The repo's default loader is a script; its parquet conversion branch holds the same rows.
+        Source("fewrel", 26, "thunlp/few_rel", "default", ("train_wiki",), (),
+               ("relation", "tokens", "head", "tail", "names"), {"candidate": 7_000, "choice": 3_000}, 100,
+               revision="refs/convert/parquet", data_files="default/{split}/*.parquet"),
+    )
+}  # fmt: skip
+
+
+
+def _rescaled(sources: Mapping[str, Source], total: int) -> dict[str, Source]:
+    """The same sources with their example counts scaled to sum to `total` (largest remainder),
+    so every (source, family) cell keeps its share; they contribute no dev_in rows."""
+    cells = [(s.name, family, n) for s in sources.values() for family, n in s.counts.items()]
+    whole = sum(n for _name, _family, n in cells)
+    exact = [total * n / whole for _name, _family, n in cells]
+    counts = [int(x) for x in exact]
+    for i in sorted(range(len(cells)), key=lambda i: (-(exact[i] - counts[i]), i))[: total - sum(counts)]:
+        counts[i] += 1
+    scaled: dict[str, dict[str, int]] = {}
+    for (name, family, _n), n in zip(cells, counts):
+        scaled.setdefault(name, {})[family] = n
+    return {name: replace(src, counts=scaled[name], dev_n=0) for name, src in sources.items()}
+
+
+# "cand_mix_v1": the candidate-stage rows plus as many rows of the default mix, in its proportions.
+CAND_MIX_SOURCES: dict[str, Source] = {**CAND_SOURCES, **_rescaled(SOURCES, 20_000)}
+
+# Named training mixes for `build(recipe=...)`; "v1" is the fine-tune spec's 96,000 rows.
+RECIPES: dict[str, dict[str, Source]] = {"v1": SOURCES, "cand_v1": CAND_SOURCES, "cand_mix_v1": CAND_MIX_SOURCES}
+
 # Sources never trained on; dev_xfer rows come from these, one canonical format each.
 XFER_SOURCES: dict[str, Source] = {
     s.name: s
@@ -1216,4 +1375,6 @@ def label_sets(source: str) -> dict[str, LabelSet]:
         "emotion": {"emotion": EMOTION},
         "dailydialog": {"act": DAILYDIALOG},
         "hwu64": {"intent": HWU64},
+        "ledgar": {"provision": LEDGAR},
+        "fewrel": {"relation": FEWREL},
     }.get(source, {})

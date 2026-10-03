@@ -280,6 +280,8 @@ def run(cfg: RunConfig, scorer: Any = None, task_data: TaskData | None = None) -
                 "stage": raw.stage,
                 "latency_ms": latency_ms,
             }
+            if getattr(raw, "stage1_logits", None) is not None:  # two-stage choice: the shortlist is its top `shortlist`
+                row["stage1_logits"] = [float(x) for x in raw.stage1_logits]
             f.write(json.dumps(row, allow_nan=False) + "\n")
             f.flush()
             total_ms += latency_ms
