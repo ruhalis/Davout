@@ -86,18 +86,30 @@ def _build_parser() -> argparse.ArgumentParser:
     tsyn.add_argument("--model", default=None, help="teacher model id or path (default: Qwen/Qwen3.6-27B)")
     tsyn.add_argument("--minutes", type=float, default=60.0, help="stop starting new batches after this long")
     tsyn.add_argument("--batch-size", type=int, default=16)
+    tsyn.add_argument("--domains", default="v1", help="which built-in domain list to write taxonomies for: v1 or v2")
+    tflag = tsub.add_parser("synth-flag", help="ask the teacher which intents are banking or money-movement intents")
+    tflag.add_argument("--taxonomies", required=True, help="taxonomies.jsonl written by synth-generate")
+    tflag.add_argument("--out", required=True, help="JSONL of flags to append to")
+    tflag.add_argument("--model", default=None)
     tdec = tsub.add_parser("synth-decisions", help="clean the synthetic utterances and build their ten-option decisions")
     tdec.add_argument("--dir", required=True, help="directory written by synth-generate")
     tdec.add_argument("--model", required=True, help="student checkpoint whose candidate stage picks the shortlists")
     tdec.add_argument("--batch-size", type=int, default=256)
+    tdec.add_argument("--tag", default="", help="prefix of the taxonomy number in row ids (keeps several sets apart)")
+    tdec.add_argument("--flags", default=None, help="JSONL written by synth-flag")
+    tdec.add_argument("--desc-rate", type=float, default=0.5, help="share of rows that show intent descriptions (at most 0.5)")
     tdec.add_argument("--device", default=_env("DAVOUT_DEVICE", "auto"))
     tsoft = tsub.add_parser("soft-rows", help="merge teacher distributions into training rows with soft targets")
     tsoft.add_argument("--out", required=True)
     tsoft.add_argument("--synth-rows", required=True)
     tsoft.add_argument("--synth-teacher", required=True)
-    tsoft.add_argument("--gold-rows", required=True, help="comma-separated JSONL files of gold-labelled training rows")
-    tsoft.add_argument("--gold-dev-rows", required=True)
-    tsoft.add_argument("--gold-teacher", required=True)
+    tsoft.add_argument("--gold-rows", default="", help="comma-separated JSONL files of gold-labelled training rows")
+    tsoft.add_argument("--gold-dev-rows", default=None)
+    tsoft.add_argument("--gold-teacher", default=None)
+    tsoft.add_argument("--dev-each", type=int, default=200, help="synthetic rows held out for dev_in")
+    tsoft.add_argument("--carry", default="", help="comma-separated files of finished rows to add to train")
+    tsoft.add_argument("--carry-dev", default="", help="comma-separated files of finished rows to add to dev_in")
+    tsoft.add_argument("--carry-drop", default=None, help="TAXONOMIES,FLAGS of the carried synthetic set: drop its flagged intents")
     tmine = tsub.add_parser("mine-negatives", help="rank each utterance's wrong labels with a model's candidate stage")
     tmine.add_argument("--out", required=True, help="directory to write, one JSONL per mined source")
     tmine.add_argument("--model", required=True, help="model id or checkpoint path whose candidate stage ranks the labels")
@@ -327,7 +339,17 @@ def _cmd_synth_generate(args: argparse.Namespace) -> int:
     from davout.train import synth
 
     backend = teacher.TeacherBackend(args.model or teacher.MODEL_ID, batch_size=args.batch_size)
-    print(json.dumps(synth.generate(args.out, backend, minutes=args.minutes, batch_size=args.batch_size), indent=2))
+    domains = synth.DOMAIN_SETS[args.domains]
+    print(json.dumps(synth.generate(args.out, backend, minutes=args.minutes, batch_size=args.batch_size, domains=domains), indent=2))
+    return 0
+
+
+def _cmd_synth_flag(args: argparse.Namespace) -> int:
+    from davout import teacher
+    from davout.train import synth
+
+    backend = teacher.TeacherBackend(args.model or teacher.MODEL_ID, batch_size=32)
+    print(json.dumps(synth.flag_banking(args.taxonomies, args.out, backend), indent=2))
     return 0
 
 
@@ -336,16 +358,18 @@ def _cmd_synth_decisions(args: argparse.Namespace) -> int:
     from davout.train import synth
 
     backend = HrmBackend(args.model, device=args.device, max_tokens=512, batch_size=args.batch_size, max_batch_tokens=16384)
-    print(json.dumps(synth.decisions(args.dir, backend), indent=2))
+    print(json.dumps(synth.decisions(args.dir, backend, tag=args.tag, flags=args.flags, desc_rate=args.desc_rate), indent=2))
     return 0
 
 
 def _cmd_soft_rows(args: argparse.Namespace) -> int:
     from davout.train import synth
 
-    stats = synth.soft_rows(args.out, synth_rows=args.synth_rows, synth_teacher=args.synth_teacher,
-                            gold_rows=[p.strip() for p in args.gold_rows.split(",") if p.strip()],
-                            gold_teacher=args.gold_teacher, gold_dev_rows=args.gold_dev_rows)  # fmt: skip
+    split = lambda v: [p.strip() for p in (v or "").split(",") if p.strip()]  # noqa: E731
+    stats = synth.soft_rows(args.out, synth_rows=args.synth_rows, synth_teacher=args.synth_teacher, gold_rows=split(args.gold_rows),
+                            gold_teacher=args.gold_teacher, gold_dev_rows=args.gold_dev_rows, dev_each=args.dev_each,
+                            carry=split(args.carry), carry_dev=split(args.carry_dev),
+                            carry_drop=tuple(split(args.carry_drop)) if args.carry_drop else None)  # fmt: skip
     print(json.dumps(stats, indent=2))
     return 0
 
@@ -392,7 +416,8 @@ def _cmd_train_run(args: argparse.Namespace) -> int:
 
 _TRAIN_HANDLERS = {
     "build-data": _cmd_train_build, "mine-negatives": _cmd_train_mine, "run": _cmd_train_run,
-    "synth-generate": _cmd_synth_generate, "synth-decisions": _cmd_synth_decisions, "soft-rows": _cmd_soft_rows,
+    "synth-generate": _cmd_synth_generate, "synth-flag": _cmd_synth_flag, "synth-decisions": _cmd_synth_decisions,
+    "soft-rows": _cmd_soft_rows,
 }  # fmt: skip
 
 _BENCH_HANDLERS = {

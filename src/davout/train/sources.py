@@ -1334,12 +1334,13 @@ GUARD_NGRAM = 8
 
 # "teacher_intent_v1": 20,000 rows of the default mix plus teacher-labelled intent rows that are
 # built outside this module (`davout.train.synth.soft_rows`) and passed to `build(extra=...)`.
-EXTRA_ROW_RECIPES: frozenset[str] = frozenset({"teacher_intent_v1"})
+EXTRA_ROW_RECIPES: frozenset[str] = frozenset({"teacher_intent_v1", "teacher_intent_v2"})
 
 # Named training mixes for `build(recipe=...)`; "v1" is the fine-tune spec's 96,000 rows.
 RECIPES: dict[str, dict[str, Source]] = {
     "v1": SOURCES, "cand_v1": CAND_SOURCES, "cand_mix_v1": CAND_MIX_SOURCES, "intent_hn_v1": INTENT_HN_MIX_SOURCES,
     "teacher_intent_v1": _rescaled(SOURCES, 20_000),
+    "teacher_intent_v2": _rescaled(SOURCES, 40_000),  # a larger teacher-labelled set, so more of the default mix
 }  # fmt: skip
 
 # Sources never trained on; dev_xfer rows come from these, one canonical format each.

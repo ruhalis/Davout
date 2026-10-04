@@ -61,7 +61,7 @@ def test_generate_decisions_soft_rows_and_recipe(tmp_path: Path) -> None:
     assert synth.generate(d, _Teacher(), minutes=5, domains=("an airline", "a hotel chain"))["utterances_written"] == 0  # resumes
 
     dstats = synth.decisions(d, _Student(), loader=fake_loader)
-    assert dstats["dropped"]["banking_like_intent"] == 2 and dstats["dropped"]["utterance_of_dropped_intent"] == 2 * 13
+    assert dstats["dropped"]["banking_like_intent_keyword"] == 2 and dstats["dropped"]["utterance_of_dropped_intent"] == 2 * 13
     assert dstats["dropped"]["duplicate"] == 24 + 24 * 13  # the repeated line, and the second domain repeats the first
     assert dstats["decisions"] == 24 * 12 and dstats["student_gold_top10"] < 1.0 and dstats["student_gold_top1"] == 0.0
     rows = read(d / "decisions.jsonl")
@@ -109,3 +109,56 @@ def test_generate_decisions_soft_rows_and_recipe(tmp_path: Path) -> None:
     assert {r["source"] for r in read(tmp_path / "built" / "dev_in.jsonl")} == {"clinc_hn", synth.SOURCE}
     assert len(read_rows(tmp_path / "built" / "train.jsonl")) == len(built)
     assert count_tokens("abcd") == 1
+
+
+class _FlagTeacher:
+    """Says Yes (letter A) to intents whose description mentions the vault."""
+
+    def read(self, prompts: Any, n_labels: Any) -> list[list[float]]:
+        return [[4.0, 0.0] if "vault" in p[1]["content"] else [0.0, 4.0] for p in prompts]
+
+
+def test_teacher_flags_resumable_decisions_and_carried_rows(tmp_path: Path) -> None:
+    d = tmp_path / "synth"
+    synth.generate(d, _Teacher(), minutes=5, domains=("an airline",))
+    tax = json.loads((d / "taxonomies.jsonl").read_text())
+    tax["intents"][3]["description"] = "the customer asks about the vault"
+    (d / "taxonomies.jsonl").write_text(json.dumps(tax) + "\n")
+    flags = synth.flag_banking(d / "taxonomies.jsonl", tmp_path / "flags.jsonl", _FlagTeacher())
+    assert flags == {"intents": 25, "flagged": 1}
+    assert synth.flag_banking(d / "taxonomies.jsonl", tmp_path / "flags.jsonl", _FlagTeacher()) == flags  # nothing asked twice
+    assert synth.read_flags(tmp_path / "flags.jsonl") == {("an airline", "intent_03")}
+
+    stats = synth.decisions(d, _Student(), loader=fake_loader, tag="v2-", flags=tmp_path / "flags.jsonl", desc_rate=0.25)
+    assert stats["dropped"]["banking_like_intent_teacher_only"] == 1 and stats["dropped"]["banking_like_intent_keyword"] == 1
+    rows = read(d / "decisions.jsonl")
+    assert stats["decisions"] == len(rows) == 23 * 12 and all(r["id"].startswith("synth_intent/v2-0/") for r in rows)
+    assert not any("intent 03" in json.dumps(r["question"]).lower().replace("_", " ") for r in rows)
+    described = sum(any(v for v in r["question"]["criteria"].values()) for r in rows) / len(rows)
+    assert 0.12 < described < 0.4  # about a quarter show descriptions
+
+    class Never:
+        def read(self, prompts: Any) -> Any:
+            raise AssertionError("a finished taxonomy is not ranked again")
+
+    assert synth.decisions(d, Never(), loader=fake_loader, tag="v2-", flags=tmp_path / "flags.jsonl", desc_rate=0.25) == stats
+    assert read(d / "decisions.jsonl") == rows
+
+    with (d / "teacher.jsonl").open("w") as f:
+        for r in rows:
+            f.write(json.dumps({"id": r["id"], "probs": [0.91 if k == r["label"] else 0.01 for k in range(10)], "agree": True}) + "\n")
+    q = rows[0]["question"]
+    old = [{"id": f"synth_intent/0/intent_0{k}/{i}", "source": "synth_intent", "family": "choice", "state": f"old {k} {i}", "question": q,
+            "label": 0, "target": [1.0] + [0.0] * 9} for k in (3, 4) for i in range(5)]  # fmt: skip
+    gold = [{"id": f"clinc_hn/train/{i}", "source": "clinc_hn", "family": "choice", "state": f"g {i}", "question": q, "label": 1,
+             "target": [0.5, 0.5] + [0.0] * 8} for i in range(6)]  # fmt: skip
+    (tmp_path / "old_train.jsonl").write_text("".join(json.dumps(r) + "\n" for r in old + gold[:4]))
+    (tmp_path / "old_dev.jsonl").write_text("".join(json.dumps(r) + "\n" for r in gold[4:]))
+    s = synth.soft_rows(tmp_path / "extra", synth_rows=d / "decisions.jsonl", synth_teacher=d / "teacher.jsonl", dev_each=40,
+                        carry=[tmp_path / "old_train.jsonl"], carry_dev=[tmp_path / "old_dev.jsonl"],
+                        carry_drop=(d / "taxonomies.jsonl", tmp_path / "flags.jsonl"))  # fmt: skip
+    assert s["carried"] == {"dropped_flagged_intent": 5, "train:synth_intent": 5, "train:clinc_hn": 4, "dev_in:clinc_hn": 2}
+    assert s["rows"]["dev_per_source"] == {"synth_intent": 40, "clinc_hn": 2}
+    assert s["rows"]["train_per_source"] == {"synth_intent": len(rows) - 40 + 5, "clinc_hn": 4} and "gold" not in s
+    manifest = run_build(tmp_path / "built", scale=0.01, recipe="teacher_intent_v2", extra=tmp_path / "extra")
+    assert manifest["extra_rows"]["train"] == s["rows"]["train_per_source"]
