@@ -43,7 +43,7 @@ Researched 2026-10-02. The venues are GitHub, Hugging Face (models, datasets and
 5. **Cross-encoder, NLI, embedding and late-interaction scoring per option.** One pass per option, with no joint context across options:
    - OpenDecision (zero-shot NLI), modernbert-ja-310m-jev (cross-encoder), JevEmbed (cosine similarity) and tasksource-jev-nano (ColBERT MaxSim);
    - OpenJev (AlexWortega) also belongs here.
-6. **Distillation from Jev itself.** This is rare. AutoTrust JEV-9B/27B is the only clear case: 498k rows of Jev 1.13 output distributions bought through OpenRouter. stuntd distils the user's own Jev, OpenAI or Anthropic traffic into local heads. jevos evaluates against Jev labels, but its training provenance is unclear. Most others explicitly say they had no Jev access or used other teachers (Qwen3.6-27B, GLM, GPT-6 Luna).
+6. **Distillation from Jev itself.** This is rare. AutoTrust JEV-9B/27B is the only clear case: 498k rows of Jev 1.13 output distributions bought through OpenRouter. stuntd distils a deployer's own Jev, OpenAI or Anthropic traffic into local heads. jevos evaluates against Jev labels, but its training provenance is unclear. Most others explicitly say they had no Jev access or used other teachers (Qwen3.6-27B, GLM, GPT-6 Luna).
 
 The **lineage between clones** is visible in several places:
 - NeoHorse ships Kev's runtime and pointer head;

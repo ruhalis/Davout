@@ -2,7 +2,7 @@
 
 Researched 2026-10-02. Labels: **VERIFIED** = read in code or a primary file in the repo; **REPORTED** = stated in the model card, RESULTS file, a third-party page, or the Jev vendor's marketing, not checked in code; **INFERRED** = my reasoning from the code.
 
-Paths below are relative to the Hugging Face model repo `AlexWortega/openjev` at commit `a204480` (2026-10-01). A clone without weights is in `scratchpad/openjev/`.
+Paths below are relative to the Hugging Face model repo `AlexWortega/openjev` at commit `a204480` (2026-10-01). The code was read from a local clone without weights.
 
 ---
 
@@ -20,7 +20,7 @@ Paths below are relative to the Hugging Face model repo `AlexWortega/openjev` at
   - It benchmarks against "Jev 1.13" on JevBench.
   - `code/serving/decisions_api.py` reimplements the Jev / OpenRouter Decisions request schema (`POST /v1/systemone`).
   - HF discussion #2 asks "Can we use this Open Jev model as an open-source alternative of Jev by TypeSafe Ai?" The author answers "yes exactly".
-  - This is also the OpenJev that the Davout README cites (`README.md:122`) and that the user's `~/projects/forum/openjev/server.py` serves.
+  - This is also the OpenJev that Davout's benchmark uses as its baseline (see `README.md` and `src/davout/scorer_nli.py`), served through a local OpenJev sidecar.
   
   **VERIFIED**
 
@@ -31,7 +31,7 @@ Paths below are relative to the Hugging Face model repo `AlexWortega/openjev` at
 | 2026-09-17 | 35B-A3B latent + MLP heads; WebQL results |
 | 2026-09-19 | v2: `qwen3.5-4b-nli-v2` (text + images, large mixture); `qwen3.5-35b-a3b-nli` (LoRA) |
 | 2026-09-20 | `qwen3.5-0.8b-nli-v2s-long` (4k ctx, faithfulness/IF/false-premise + long docs); PR #1 shares the prefix cache across hypotheses |
-| 2026-09-21 | SGLang serving package (`f004f37`, **the revision pinned by the user's forum sidecar**) |
+| 2026-09-21 | SGLang serving package (`f004f37`, **the revision pinned by the local OpenJev sidecar used for Davout's baseline**) |
 | 2026-09-23 | v5: `qwen3.5-4b-nli-v5` ("typed decisions"), `-2b-nli-v5`, `-0.8b-nli-v5`; RESULTS-v5.md; contamination manifest |
 | 2026-09-24 | `qwen3.5-4b-nli-v5-nvfp4` (ModelOpt NVFP4 PTQ + QAD) |
 | 2026-09-27 | `qwen3.5-0.8b-nli-v5` **removed** (`a298f27`). Discussion #5 asked why; the author replied "returned", but the folder is not in the tree at HEAD `a204480`. The card still links it, so that link is broken. |
@@ -109,7 +109,7 @@ It is an **NLI cross-encoder with a classification head, scored once per option 
 
 **Cost scales with options.** An N-option question over W windows needs N·W forward passes. Mitigations:
 - **Shared-prefix batching** (`modeling_openjev.py:88-140`, PR #1). For 3 or more hypotheses over one premise, the common token prefix is prefilled once. Its cache, including Qwen3.5's recurrent linear-attention state, is copied with `reorder_cache` into a batch of suffix continuations. **VERIFIED**
-- `decide()` in `openjev_decide.py:84` calls plain `ce.predict(pairs)`, **not** `predict_hypotheses`. So the JevBench adapter path does **not** use the prefix cache; only `rerank` and the user's sidecar do. **VERIFIED**
+- `decide()` in `openjev_decide.py:84` calls plain `ce.predict(pairs)`, **not** `predict_hypotheses`. So the JevBench adapter path does **not** use the prefix cache; only `rerank` and the local sidecar used for Davout's baseline do. **VERIFIED**
 - The SGLang gateway sends pairs in chunks of `CLASSIFY_BS=32` concurrently to SGLang `/classify`, and SGLang does its own radix prefix caching. **VERIFIED** (`decisions_server.py:35,56-80`). The radix caching is **INFERRED** from how SGLang works.
 - **There is no two-stage path for large Choice sets**: everything is one pass per option, capped at 64 options in the API. **VERIFIED**
 
@@ -129,7 +129,7 @@ It is an **NLI cross-encoder with a classification head, scored once per option 
 - **Abstention:** none. There is no "none of the above" or abstain output. The API simply 400s on bad input. **VERIFIED**
 - **Batching:** pairs are batched (`bs=32`), as is the prefix-cache path. The gateway enforces `MAX_INFLIGHT=64` (429 above that). Limits are 64 questions per request and 64 options per question. **VERIFIED**
 - **Determinism:** bit-identical across repeats in fp32 (REPORTED). The forward pass is deterministic, so this is **INFERRED** plausible.
-- **Routing:** there is no model router or cascade inside OpenJev. Routing exists only as a use case (the user's forum project uses OpenJev as a message router). **VERIFIED** (no such code)
+- **Routing:** there is no model router or cascade inside OpenJev. Routing exists only as a use case (for example, using OpenJev as a message router in a downstream application). **VERIFIED** (no such code)
 - **API surface of the gateway:**
   - Routes: `POST /api/alpha/decisions`, `/api/v1/systemone` and `/v1/systemone`, all with the same schema; plus `GET /health`.
   - Auth is an optional Bearer `API_KEY`.
@@ -210,9 +210,9 @@ All **REPORTED** (README.md, RESULTS-v5.md). The harness code exists (`code/eval
 - **Weaknesses the author measured** (`code/eval_security.py`):
   - As a shell-command safety reviewer: 0.600 accuracy, catching 37% of deny-worthy commands.
   - Prompt injection: one injected line in the state drops JevBench accuracy from 0.833 to 0.467 (150 items) and raises deny-worthy-allowed from 17% to 85%.
-- **The user's own Davout benchmark** (`/Users/ruhalis/projects/Davout/README.md:160-205`; 300 test items per task, RTX 5090) used the **0.8B v2s-long** checkpoint at revision `f004f37`, **not v5**:
+- **Davout's own benchmark** (the benchmark results in `README.md` and `results/report.md`; 300 test items per task, RTX 5090) used the **0.8B v2s-long** checkpoint at revision `f004f37`, **not v5**:
   - OpenJev scored BoolQ 0.723, SST-2 0.813, SMS spam 0.890, AG News 0.830, Yelp 0.393, Banking77 0.730, with p50 latency 16–113 ms.
-  - Caveats (VERIFIED in Davout's `src/davout/scorer_nli.py:46-65` and forum `openjev/server.py:56-60`):
+  - Caveats (VERIFIED in Davout's `src/davout/scorer_nli.py:46-65` and in the local sidecar's request handling):
     - Davout builds its **own hypotheses** (`'Regarding "{ins}", the correct answer is "{name}": {desc}.'`, and a **single** hypothesis for noul). These are not OpenJev's trained `'The answer to "{instr}" is {label}: {crit}'` with a yes/no pair. The baseline is therefore probably understated for v5-style use. **INFERRED**
     - The 0.8B v2s-long lineage went through a `v2s-jev` stage. If that stage included `jevfmt`, it trained on the **Banking77 train split** in a 6-option intent format, which would flatter OpenJev's Banking77 number. The v5 panel goes further and includes the **Banking77 test split**, so any future Davout comparison against v5 on Banking77 or CLINC is contaminated. **VERIFIED** for v5 (manifest); **INFERRED** for v2s-long.
 

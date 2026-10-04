@@ -217,10 +217,10 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
-# Private decision data (the forum router eval converted for davout bench); never commit
+# Private decision data (a private routing evaluation converted for davout bench); never commit
 data/
 
-# Forum router eval output (case ids and expected responders from a private project)
+# Output of that private routing evaluation (case ids and expected labels are private)
 results-forum/
 # ...and the same for the fine-tuned models (results-forum-ftA/, results-forum-ftB/, results-forum-ft-report.md)
 results-forum*

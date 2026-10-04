@@ -7,9 +7,9 @@ c-eval-ftA-sst2 ok 20s
 c-eval-ftA-ag_news ok 24s
 c-eval-ftA-yelp ok 27s
 c-eval-ftA-banking77 ok 313s
-c-eval-ftA-forum_needs_reply ok 8s
-c-eval-ftA-forum_responder ok 27s
-c-eval-ftA-forum_primary_choice ok 9s
+c-eval-ftA-router_needs_reply ok 8s
+c-eval-ftA-router_responder ok 27s
+c-eval-ftA-router_primary_choice ok 9s
 d-train-ftB ok state=early_stopped step=1500/1500 lr=1e-05 aux_weight=0.5 best_step=1000 best_dev_xfer_nll=0.4466 base_dev_xfer_nll=0.8167322429761467 sanity_gate=pass(max_final_diff=0.0007) nonfinite_steps=0 reason=dev_xfer NLL rose at two consecutive evaluations (steps 1250 and 1500)
 e-eval-ftB-boolq ok 25s
 e-eval-ftB-sms_spam ok 21s
@@ -17,8 +17,8 @@ e-eval-ftB-sst2 ok 20s
 e-eval-ftB-ag_news ok 23s
 e-eval-ftB-yelp ok 27s
 e-eval-ftB-banking77 ok 313s
-e-eval-ftB-forum_needs_reply ok 8s
-e-eval-ftB-forum_responder ok 27s
-e-eval-ftB-forum_primary_choice ok 9s
+e-eval-ftB-router_needs_reply ok 8s
+e-eval-ftB-router_responder ok 27s
+e-eval-ftB-router_primary_choice ok 9s
 f-report ok 2s
-f-report-forum ok 0s
+f-report-router ok 0s

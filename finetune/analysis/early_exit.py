@@ -2,7 +2,7 @@
 
 Usage (from the Davout checkout):
     uv run python finetune/analysis/early_exit.py            # the five single-prompt public tasks
-    uv run python finetune/analysis/early_exit.py --forum    # the three router decision files (private; keep the output git-ignored)
+    uv run python finetune/analysis/early_exit.py --private-router    # a private routing evaluation (data not public; keep the output git-ignored)
 
 Per model and task: cycle 1 vs final (accuracy raw and calibrated, NLL raw and calibrated, agreement),
 then a confidence gate: answer from cycle 1 when its calibrated top probability >= tau, else use the
@@ -24,8 +24,9 @@ from davout.bench import report
 from davout.calibrate import Calibrator
 
 ROOT = Path(__file__).resolve().parents[2]
-FORUM = "--forum" in sys.argv
-if FORUM:
+PRIVATE_ROUTER = "--private-router" in sys.argv
+if PRIVATE_ROUTER:
+    # Task and directory names below are the on-disk names of the private runs (git-ignored).
     TASKS = ["forum_needs_reply", "forum_responder", "forum_primary_choice"]
     RUNS = {
         "base": lambda t: ROOT / "results-forum" / f"hrm-{t}-zero-prefix-s0",
@@ -142,7 +143,7 @@ def main() -> None:
             print(f"| {t} | {m} | " + " | ".join(cells) + f" | {summary[(t, m)]['c1_cal']:.3f} | {summary[(t, m)]['fin_cal']:.3f} |")
     print()
 
-    print("## Spec D5 'early exit usable', applied literally" + (" (router files: for reference only, the criterion names the five public single-prompt tasks)" if FORUM else "") + "\n")
+    print("## Spec D5 'early exit usable', applied literally" + (" (router files: for reference only, the criterion names the five public single-prompt tasks)" if PRIVATE_ROUTER else "") + "\n")
     for m in RUNS:
         within = [t for t in TASKS if summary[(t, m)]["c1_cal"] >= summary[(t, m)]["fin_cal"] - 0.03 - 1e-9]
         gate_ok = [t for t in TASKS if summary[(t, m)]["ok"]]
@@ -152,7 +153,7 @@ def main() -> None:
         pooled_comb = sum(summary[(t, m)]["comb_correct"] for t in TASKS) / n
         pooled_fin = sum(summary[(t, m)]["fin_correct"] for t in TASKS) / n
         print(f"### {m}")
-        print(f"- (a) cycle-1 calibrated accuracy within 0.03 of final: {len(within)} of {len(TASKS)} tasks ({', '.join(within) or 'none'})" + ("" if FORUM else f" → {'MET' if len(within) >= 4 else 'NOT met'} (needs ≥ 4 of 5)"))
+        print(f"- (a) cycle-1 calibrated accuracy within 0.03 of final: {len(within)} of {len(TASKS)} tasks ({', '.join(within) or 'none'})" + ("" if PRIVATE_ROUTER else f" → {'MET' if len(within) >= 4 else 'NOT met'} (needs ≥ 4 of 5)"))
         print(f"- (b) per task, calib-chosen tau, on test: ≥50% exit with combined accuracy within 0.01 of final on {len(gate_ok)} of {len(TASKS)} tasks ({', '.join(gate_ok) or 'none'})")
         print(f"  pooled over the {len(TASKS)} tasks ({n} test decisions, per-task calib-chosen tau): exit {pooled_exit:.3f}, combined accuracy {pooled_comb:.3f} vs final-only {pooled_fin:.3f} (Δ {pooled_comb - pooled_fin:+.3f}) → {'MET' if pooled_exit >= 0.5 and pooled_comb >= pooled_fin - 0.01 - 1e-9 else 'NOT met'} on the pooled reading")
         print(f"  best case (tau picked on the test rows themselves, optimistic): possible on {len(oracle_ok)} of {len(TASKS)} tasks ({', '.join(oracle_ok) or 'none'})")

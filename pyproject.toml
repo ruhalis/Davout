@@ -1,6 +1,10 @@
 [project]
 name = "davout"
 version = "0.1.0"
+description = "Open Jev-style typed-decision model on HRM-Text-1B, with a benchmark and fine-tuning harness."
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
 requires-python = ">=3.11,<3.14"
 dependencies = [
     "numpy>=2",

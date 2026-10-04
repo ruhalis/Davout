@@ -2,9 +2,9 @@
 
 Research date: 2 October 2026. Read-only; nothing in the Davout repo was changed.
 
-Labels: **VERIFIED** = read on a TypeSafe primary source in this session (site, docs, blog, legal, GitHub org, or a TypeSafe staff member's own words in a transcript or thread). **REPORTED** = secondary source, not confirmed by a primary one. **INFERRED** = my reading of the evidence, or a third party's guess.
+Labels: **VERIFIED** = read on a TypeSafe primary source during this research (site, docs, blog, legal, GitHub org, or a TypeSafe staff member's own words in a transcript or thread). **REPORTED** = secondary source, not confirmed by a primary one. **INFERRED** = my reading of the evidence, or a third party's guess.
 
-Disambiguation: Davout's README and its theory note (`HRM vs. Iterative Transformer for a Jev-Style Decision Model.md`) mean TypeSafe AI's Jev, API `POST /v1/systemone`, with question types Choice, Score and Noul. Searching "TypeSafe AI Jev" gives clean results with no name collisions. (TypeSafe AI is not the Scala company Typesafe Inc., now Lightbend.)
+Disambiguation: Davout's README and its theory note ([HRM vs. Iterative Transformer](../design-hrm-vs-iterative-transformer.md)) mean TypeSafe AI's Jev, API `POST /v1/systemone`, with question types Choice, Score and Noul. Searching "TypeSafe AI Jev" gives clean results with no name collisions. (TypeSafe AI is not the Scala company Typesafe Inc., now Lightbend.)
 
 ---
 
@@ -80,7 +80,7 @@ Disambiguation: Davout's README and its theory note (`HRM vs. Iterative Transfor
 | The docs show "Pretrained language models branch into … RLCD decision-model path" (figure alt text), which suggests Jev starts from a **pretrained language model**. | VERIFIED (figure text) / INFERRED (that Jev literally does) | same page |
 | Almeida describes RLCD as a new task or "North Star" rather than a specific algorithm ("Just like DPO and all of its descendants also do RLHF"). No reward function is disclosed. | VERIFIED | Latent Space transcript, about 00:25 |
 | Data: "TypeSafe is primarily a data research lab … We make all the data ourselves." Asked "all your data is synthetic", Almeida did not dispute it ("synthetic, so what"). Humans with taste review and regenerate it. The data is not trained on customer data. | VERIFIED | launch post FAQ; Latent Space transcript, about 00:22 to 00:24; https://docs.typesafe.ai/models |
-| The acronym RLCD collides with an unrelated 2023 paper, "RLCD: Reinforcement Learning from Contrastive Distillation" (Yang et al.). | REPORTED (woshipm). The paper exists at arXiv 2307.12950, which I did not fetch this session. | https://www.woshipm.com/?p=6467184 |
+| The acronym RLCD collides with an unrelated 2023 paper, "RLCD: Reinforcement Learning from Contrastive Distillation" (Yang et al.). | REPORTED (woshipm). The paper exists at arXiv 2307.12950, which was not fetched for this note. | https://www.woshipm.com/?p=6467184 |
 
 ### 2d. Usage mode, limits, latency, cost
 

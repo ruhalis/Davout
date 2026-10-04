@@ -1,6 +1,6 @@
 # Kev (jaredpalmer/kev): how it works
 
-Researched 2026-10-02. Code read from a shallow clone of `https://github.com/jaredpalmer/kev` at commit `84847f0` (2026-10-01), at `scratchpad/kev/`. Nothing was installed or run.
+Researched 2026-10-02. Code read from a shallow clone of `https://github.com/jaredpalmer/kev` at commit `84847f0` (2026-10-01). Nothing was installed or run.
 
 Labels: **VERIFIED** means read in code or a primary source. **REPORTED** means the project claims it and I did not check it. **INFERRED** means my own reading.
 
@@ -105,7 +105,7 @@ How requests are serialized (VERIFIED, `kev/model.py:9-127` and `kev/api.py`):
 - **Abstention:** there is no explicit abstain output.
   - Training augmentation adds "None of the above"-style options, as the correct answer (`p_none` 0.1) or as a distractor (`p_none_distract` 0.12), and also adds distractor options (`p_distract` 0.15) (VERIFIED, `kev/data.py:48-53, 320-340`).
   - "Unknowable" eval records measure over-confidence (REPORTED: Kev-9B is ≥0.9-confident on 0% of them vs. Jev's 9%).
-- **Routing:** no model routing. The user routes on thresholds (INFERRED from the README).
+- **Routing:** no model routing. Callers route on thresholds (INFERRED from the README).
 - **Batching and caching** (VERIFIED, `kev/serve.py:28-134`):
   - One model thread drains a queue and runs whatever is waiting as one batch (`probs_batch`).
   - CUDA graphs are used on hybrid backbones.
