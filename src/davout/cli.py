@@ -62,6 +62,14 @@ def _build_parser() -> argparse.ArgumentParser:
     calibrate.add_argument("run_dirs", nargs="+", metavar="RUN_DIR", help="run directories, or a results directory")
     calibrate.add_argument("--out", required=True, help="where to write the calibration JSON")
 
+    teach = sub.add_parser("teacher", help="score decisions with a large teacher model (needs --extra teacher)")
+    teach.add_argument("--jsonl", required=True, help="decisions, one JSON object per line: id, state, question, optional label")
+    teach.add_argument("--out", required=True, help="JSONL to append the teacher's distributions to")
+    teach.add_argument("--model", default=None, help="model id or path (default: Qwen/Qwen3.6-27B)")
+    teach.add_argument("--batch-size", type=int, default=16)
+    teach.add_argument("--max-batch-tokens", type=int, default=8192)
+    teach.add_argument("--seed", type=int, default=0)
+
     train = sub.add_parser("train", help="fine-tune the model on typed decisions")
     train.set_defaults(train_help=train.print_help)
     tsub = train.add_subparsers(dest="train_command")
@@ -71,6 +79,33 @@ def _build_parser() -> argparse.ArgumentParser:
     build.add_argument("--scale", type=float, default=1.0, help="fraction of the full example counts")
     build.add_argument("--sources", help="comma-separated source names (default: all)")
     build.add_argument("--recipe", default="v1", help="training mix: v1 (96,000 rows, default), cand_v1 (candidate-stage experiment) or cand_mix_v1 (cand_v1 plus 20,000 v1 rows)")
+    build.add_argument("--negatives", help="directory written by `davout train mine-negatives` (recipes with mined shortlists)")
+    build.add_argument("--extra", help="directory of finished teacher-labelled rows (recipe teacher_intent_v1)")
+    tsyn = tsub.add_parser("synth-generate", help="have the teacher write intent taxonomies and utterances (needs --extra teacher)")
+    tsyn.add_argument("--out", required=True)
+    tsyn.add_argument("--model", default=None, help="teacher model id or path (default: Qwen/Qwen3.6-27B)")
+    tsyn.add_argument("--minutes", type=float, default=60.0, help="stop starting new batches after this long")
+    tsyn.add_argument("--batch-size", type=int, default=16)
+    tdec = tsub.add_parser("synth-decisions", help="clean the synthetic utterances and build their ten-option decisions")
+    tdec.add_argument("--dir", required=True, help="directory written by synth-generate")
+    tdec.add_argument("--model", required=True, help="student checkpoint whose candidate stage picks the shortlists")
+    tdec.add_argument("--batch-size", type=int, default=256)
+    tdec.add_argument("--device", default=_env("DAVOUT_DEVICE", "auto"))
+    tsoft = tsub.add_parser("soft-rows", help="merge teacher distributions into training rows with soft targets")
+    tsoft.add_argument("--out", required=True)
+    tsoft.add_argument("--synth-rows", required=True)
+    tsoft.add_argument("--synth-teacher", required=True)
+    tsoft.add_argument("--gold-rows", required=True, help="comma-separated JSONL files of gold-labelled training rows")
+    tsoft.add_argument("--gold-dev-rows", required=True)
+    tsoft.add_argument("--gold-teacher", required=True)
+    tmine = tsub.add_parser("mine-negatives", help="rank each utterance's wrong labels with a model's candidate stage")
+    tmine.add_argument("--out", required=True, help="directory to write, one JSONL per mined source")
+    tmine.add_argument("--model", required=True, help="model id or checkpoint path whose candidate stage ranks the labels")
+    tmine.add_argument("--recipe", default="intent_hn_v1")
+    tmine.add_argument("--batch-size", type=int, default=256)
+    tmine.add_argument("--max-batch-tokens", type=int, default=16384)
+    tmine.add_argument("--limit", type=int, default=None, help="rows per split (timing runs)")
+    tmine.add_argument("--device", default=_env("DAVOUT_DEVICE", "auto"))
     trun = tsub.add_parser("run", help="fine-tune on a built data directory; resumes an interrupted run")
     trun.add_argument("--data", required=True, help="directory with train.jsonl, dev_in.jsonl, dev_xfer.jsonl")
     trun.add_argument("--out", required=True, help="run directory (checkpoints, metrics, the exported model)")
@@ -85,6 +120,7 @@ def _build_parser() -> argparse.ArgumentParser:
     trun.add_argument("--base-dev-xfer-nll", type=float, default=None, help="base dev_xfer NLL for the step-250 gate (default: measured at step 0)")
     trun.add_argument("--max-steps", type=int, default=None, help="stop and export after this many steps (smoke runs)")
     trun.add_argument("--eval-steps", default=None, help="comma-separated evaluation steps (default: 100,250,500,...,1500)")
+    trun.add_argument("--no-early-stop", action="store_true", help="run the whole schedule even if dev_xfer NLL rises twice in a row")
     trun.add_argument("--seed", type=int, default=0)
     trun.add_argument("--device", default=_env("DAVOUT_DEVICE", "auto"))
     return parser
@@ -263,15 +299,64 @@ def _cmd_calibrate(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_teacher(args: argparse.Namespace) -> int:
+    from davout import teacher
+
+    backend = teacher.TeacherBackend(args.model or teacher.MODEL_ID, batch_size=args.batch_size, max_batch_tokens=args.max_batch_tokens)
+    print(json.dumps(teacher.score_file(backend, args.jsonl, args.out, seed=args.seed), indent=2))
+    return 0
+
+
 def _cmd_train_build(args: argparse.Namespace) -> int:
     from davout.train.data import build
 
     sources = [s.strip() for s in args.sources.split(",") if s.strip()] if args.sources else None
-    result = build(args.out, seed=args.seed, scale=args.scale, sources=sources, recipe=args.recipe)
+    extra = {"negatives": args.negatives} if args.negatives else {}
+    if args.extra:
+        extra["extra"] = args.extra
+    result = build(args.out, seed=args.seed, scale=args.scale, sources=sources, recipe=args.recipe, **extra)
     if isinstance(result, (dict, list)):
         print(json.dumps(result, indent=2, default=str))
     elif result is not None:
         print(result)
+    return 0
+
+
+def _cmd_synth_generate(args: argparse.Namespace) -> int:
+    from davout import teacher
+    from davout.train import synth
+
+    backend = teacher.TeacherBackend(args.model or teacher.MODEL_ID, batch_size=args.batch_size)
+    print(json.dumps(synth.generate(args.out, backend, minutes=args.minutes, batch_size=args.batch_size), indent=2))
+    return 0
+
+
+def _cmd_synth_decisions(args: argparse.Namespace) -> int:
+    from davout.backends.hrm import HrmBackend
+    from davout.train import synth
+
+    backend = HrmBackend(args.model, device=args.device, max_tokens=512, batch_size=args.batch_size, max_batch_tokens=16384)
+    print(json.dumps(synth.decisions(args.dir, backend), indent=2))
+    return 0
+
+
+def _cmd_soft_rows(args: argparse.Namespace) -> int:
+    from davout.train import synth
+
+    stats = synth.soft_rows(args.out, synth_rows=args.synth_rows, synth_teacher=args.synth_teacher,
+                            gold_rows=[p.strip() for p in args.gold_rows.split(",") if p.strip()],
+                            gold_teacher=args.gold_teacher, gold_dev_rows=args.gold_dev_rows)  # fmt: skip
+    print(json.dumps(stats, indent=2))
+    return 0
+
+
+def _cmd_train_mine(args: argparse.Namespace) -> int:
+    from davout.backends.hrm import HrmBackend
+    from davout.train.mine import mine
+
+    backend = HrmBackend(args.model, device=args.device, max_tokens=512, batch_size=args.batch_size,
+                         max_batch_tokens=args.max_batch_tokens)  # fmt: skip
+    print(json.dumps(mine(args.out, backend, args.recipe, limit=args.limit), indent=2))
     return 0
 
 
@@ -293,6 +378,8 @@ def _cmd_train_run(args: argparse.Namespace) -> int:
         "seed": args.seed,
         "device": args.device,
     }
+    if args.no_early_stop:
+        kwargs["early_stop"] = False
     if args.base:
         kwargs["base"] = args.base
     if args.eval_steps:
@@ -303,7 +390,10 @@ def _cmd_train_run(args: argparse.Namespace) -> int:
     return 0 if result.get("state") in ("complete", "early_stopped") and gate.get("pass") else 1
 
 
-_TRAIN_HANDLERS = {"build-data": _cmd_train_build, "run": _cmd_train_run}
+_TRAIN_HANDLERS = {
+    "build-data": _cmd_train_build, "mine-negatives": _cmd_train_mine, "run": _cmd_train_run,
+    "synth-generate": _cmd_synth_generate, "synth-decisions": _cmd_synth_decisions, "soft-rows": _cmd_soft_rows,
+}  # fmt: skip
 
 _BENCH_HANDLERS = {
     "run": _cmd_bench_run,
@@ -333,6 +423,8 @@ def main(argv: list[str] | None = None) -> int:
         return _guarded(handler, args)
     if args.command == "calibrate":
         return _guarded(_cmd_calibrate, args)
+    if args.command == "teacher":
+        return _guarded(_cmd_teacher, args)
     if args.command == "train":
         handler = _TRAIN_HANDLERS.get(args.train_command)
         if handler is None:

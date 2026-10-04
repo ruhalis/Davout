@@ -1309,8 +1309,38 @@ def _rescaled(sources: Mapping[str, Source], total: int) -> dict[str, Source]:
 # "cand_mix_v1": the candidate-stage rows plus as many rows of the default mix, in its proportions.
 CAND_MIX_SOURCES: dict[str, Source] = {**CAND_SOURCES, **_rescaled(SOURCES, 20_000)}
 
+# "intent_hn_v1": intent utterances (train splits, banking intents left out as in CLINC above) as
+# ten-option final choices whose wrong options are the ones a model's candidate stage ranks highest
+# (`davout train mine-negatives`), balanced over intents, plus 20,000 rows of the default mix. The
+# counts leave a margin over 20,000 so that one epoch still holds 625 steps of 64.
+INTENT_HN_SOURCES: dict[str, Source] = {
+    s.name: s
+    for s in (
+        Source("clinc_hn", 27, "clinc/clinc_oos", "plus", ("train",), (), ("text", "intent"), {"choice": 10_050}, 200),
+        Source("massive_hn", 28, "SetFit/amazon_massive_intent_en-US", "default", ("train",), (),
+               ("id", "text", "label_text"), {"choice": 10_050}, 200),
+    )
+}  # fmt: skip
+MINED_SOURCES: dict[str, str] = {"clinc_hn": "clinc", "massive_hn": "massive_intent"}  # -> source whose rows they read
+INTENT_HN_MIX_SOURCES: dict[str, Source] = {**INTENT_HN_SOURCES, **_rescaled(SOURCES, 20_000)}
+
+# Held-out intent sets: a mined-source utterance that repeats one of their texts, or shares eight
+# consecutive words with one, is dropped. (dataset, config, splits, text column); loaded only to filter.
+GUARD_TEXTS: tuple[Source, ...] = (
+    Source("banking77", 0, "legacy-datasets/banking77", "default", ("train", "test"), (), ("text",)),
+    Source("hwu64", 0, "FastFit/hwu_64", "default", ("test",), (), ("text",)),
+)
+GUARD_NGRAM = 8
+
+# "teacher_intent_v1": 20,000 rows of the default mix plus teacher-labelled intent rows that are
+# built outside this module (`davout.train.synth.soft_rows`) and passed to `build(extra=...)`.
+EXTRA_ROW_RECIPES: frozenset[str] = frozenset({"teacher_intent_v1"})
+
 # Named training mixes for `build(recipe=...)`; "v1" is the fine-tune spec's 96,000 rows.
-RECIPES: dict[str, dict[str, Source]] = {"v1": SOURCES, "cand_v1": CAND_SOURCES, "cand_mix_v1": CAND_MIX_SOURCES}
+RECIPES: dict[str, dict[str, Source]] = {
+    "v1": SOURCES, "cand_v1": CAND_SOURCES, "cand_mix_v1": CAND_MIX_SOURCES, "intent_hn_v1": INTENT_HN_MIX_SOURCES,
+    "teacher_intent_v1": _rescaled(SOURCES, 20_000),
+}  # fmt: skip
 
 # Sources never trained on; dev_xfer rows come from these, one canonical format each.
 XFER_SOURCES: dict[str, Source] = {
@@ -1376,5 +1406,7 @@ def label_sets(source: str) -> dict[str, LabelSet]:
         "dailydialog": {"act": DAILYDIALOG},
         "hwu64": {"intent": HWU64},
         "ledgar": {"provision": LEDGAR},
+        "clinc_hn": {"intent": CLINC},
+        "massive_hn": {"intent": MASSIVE_INTENT},
         "fewrel": {"relation": FEWREL},
     }.get(source, {})

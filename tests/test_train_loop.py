@@ -841,3 +841,45 @@ def test_cli_train_build_data(monkeypatch, capsys) -> None:
     assert seen[-1] == ("c", {"seed": 0, "scale": 1.0, "sources": None, "recipe": "cand_v1"})
     with pytest.raises(SystemExit):
         cli.main(["train", "build-data"])  # --out is required
+
+
+def test_soft_targets_match_the_label_loss_and_ignore_masked_letters(tmp_path: Path) -> None:
+    import torch
+
+    from davout.train.format import read_rows, soft_targets
+    from davout.train.loop import N_LETTERS, rce, row_loss, soft_ce
+
+    torch.manual_seed(0)
+    logits = torch.randn(4, N_LETTERS)
+    n_opt = torch.tensor([3, 10, 2, 5])
+    y = torch.tensor([1, 7, 0, 4])
+    onehot = torch.zeros(4, N_LETTERS)
+    onehot[torch.arange(4), y] = 1.0
+    assert torch.allclose(soft_ce(logits, n_opt, onehot), rce(logits, n_opt, y), atol=1e-6)
+    # a real distribution: the loss is the target-weighted mean of the per-option losses, and is finite
+    target = torch.zeros(4, N_LETTERS)
+    target[0, :3] = torch.tensor([0.5, 0.25, 0.25])
+    expected = sum(w * rce(logits[:1], n_opt[:1], torch.tensor([k])) for k, w in enumerate((0.5, 0.25, 0.25)))
+    assert torch.allclose(soft_ce(logits[:1], n_opt[:1], target[:1]), expected, atol=1e-6)
+    # mixed batch: hard rows keep exactly the label loss
+    is_soft = torch.tensor([True, False, False, False])
+    mixed = row_loss(logits, n_opt, y, (torch.where(is_soft[:, None], target, onehot), is_soft))
+    assert torch.equal(mixed[1:], rce(logits, n_opt, y)[1:]) and torch.isfinite(mixed).all()
+    assert torch.equal(row_loss(logits, n_opt, y, None), rce(logits, n_opt, y))
+
+    q = {"type": "choice", "instructions": "Which?", "criteria": {"a": None, "b": None, "c": None}}
+    rows = [
+        {"id": "s", "source": "x", "family": "choice", "state": "t", "question": q, "label": 0, "target": [0.6, 0.3, 0.1]},
+        {"id": "h", "source": "x", "family": "choice", "state": "t", "question": q, "label": 2},
+    ]
+    path = tmp_path / "rows.jsonl"
+    path.write_text("".join(json.dumps(r) + "\n" for r in rows))
+    soft, hard = read_rows(path)
+    assert soft.target == pytest.approx((0.6, 0.3, 0.1)) and hard.target is None
+    items = [Item(soft, np.arange(4, dtype=np.int32), 3, 0), Item(hard, np.arange(4, dtype=np.int32), 3, 2)]
+    t, mask = soft_targets(items, N_LETTERS)
+    assert mask.tolist() == [True, False] and t[0, :3].tolist() == pytest.approx([0.6, 0.3, 0.1]) and t[1, 2] == 1.0 and t[:, 3:].sum() == 0
+    assert soft_targets(items[1:], N_LETTERS) is None
+    path.write_text(json.dumps({**rows[0], "target": [0.6, 0.3]}) + "\n")
+    with pytest.raises(ValueError, match="target"):
+        read_rows(path)

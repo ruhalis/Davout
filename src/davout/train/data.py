@@ -408,18 +408,26 @@ def _wrong_label(golds: Sequence[Label], labels: LabelSet, rng: random.Random) -
     return rng.choice(pool), False
 
 
-def shortlist_example(state: Any, wrapper: str, gold: Label, labels: LabelSet, rng: random.Random) -> dict[str, Any]:
+def shortlist_example(state: Any, wrapper: str, gold: Label, labels: LabelSet, rng: random.Random,
+                      mined: Sequence[str] | None = None) -> dict[str, Any]:  # fmt: skip
     """A choice shaped like the second stage of a large Choice: the gold option among nine wrong
-    ones, SHORTLIST_NEAR of them drawn from the labels with the most similar names."""
+    ones. `mined` lists wrong labels (`raw`) as a model's candidate stage ranked them, best first,
+    and the first nine are used; without it SHORTLIST_NEAR come from the most similar names."""
     style = rng.choice(NAME_STYLES)
-    near = rng.sample(name_neighbours(labels)[gold.raw], SHORTLIST_NEAR)
-    rest = [label for label in labels.labels if label is not gold and label not in near]
-    real = [gold] + near + rng.sample(rest, SHORTLIST_OPTIONS - 1 - len(near))
+    if mined is not None:
+        by_raw = labels.by_raw()
+        wrong = [by_raw[raw] for raw in mined if raw != gold.raw][: SHORTLIST_OPTIONS - 1]
+        _require(len(wrong) == SHORTLIST_OPTIONS - 1, f"{gold.raw}: fewer than {SHORTLIST_OPTIONS - 1} mined negatives")
+        real = [gold] + wrong
+    else:
+        near = rng.sample(name_neighbours(labels)[gold.raw], SHORTLIST_NEAR)
+        rest = [label for label in labels.labels if label is not gold and label not in near]
+        real = [gold] + near + rng.sample(rest, SHORTLIST_OPTIONS - 1 - len(near))
     rng.shuffle(real)
     criteria, desc_mode = _criteria(real, style, any(label.desc for label in labels.labels), None, rng)
     question = {"type": "choice", "instructions": rng.choice(labels.choice_instructions), "criteria": criteria}
     meta = {"k": len(criteria), "descriptions": desc_mode, "names": style, "nota": False, "other": False,
-            "shortlist": True, "wrapper": wrapper}  # fmt: skip
+            "shortlist": "mined" if mined is not None else "names", "wrapper": wrapper}  # fmt: skip
     return {"state": state, "question": question, "label": list(criteria).index(styled(gold, style)), "meta": meta}
 
 
@@ -539,6 +547,12 @@ def _class_name(value: Any, names: Sequence[str]) -> str | None:
 
 def normalise(source: str, row: Mapping[str, Any], rng: random.Random) -> dict[str, Any] | str:
     """One dataset row as an item, or the reason it is skipped."""
+    if source in S.MINED_SOURCES:  # the rows of another source; "cls" (the intent) is what gets balanced
+        item = normalise(S.MINED_SOURCES[source], row, rng)
+        if isinstance(item, str):
+            return item
+        golds = next(iter(item["golds"].values()))
+        return {**item, "cls": golds[0].raw} if len(golds) == 1 else "out_of_scope"
     if source in ("mnli", "anli"):
         return _nli_item(row["premise"], row["hypothesis"], _class_name(row["label"], S.NLI_NAMES))
     if source == "wanli":
@@ -719,7 +733,7 @@ def normalise(source: str, row: Mapping[str, Any], rng: random.Random) -> dict[s
 
 _STYLE_KEY = {
     "tweet_offensive": "tweet", "tweet_hate": "tweet", "tweet_irony": "tweet", "tweet_sentiment": "tweet",
-    "massive_intent": "massive", "massive_scenario": "massive",
+    "massive_intent": "massive", "massive_scenario": "massive", "massive_hn": "massive", "clinc_hn": "clinc",
 }  # fmt: skip
 _FALSE_CLASSES = {"scitail": ("neutral",)}
 
@@ -806,8 +820,8 @@ def make_example(source: str, family: str, item: Mapping[str, Any], rng: random.
         state, wrapper = wrap_fields(item["fields"], rng, *S.RELATION_FIELDS)
     else:
         state, wrapper, _ = wrap_text(item["text"], _style(source), rng, item.get("extra"))
-    if family == "choice" and labels.hard:
-        ex = shortlist_example(state, wrapper, golds[0], labels, rng)
+    if family == "choice" and (labels.hard or "mined" in item):
+        ex = shortlist_example(state, wrapper, golds[0], labels, rng, item.get("mined"))
     elif family == "choice":
         ex = choice_example(state, wrapper, golds[0] if golds else None, labels, rng)
     elif family == "candidate":
@@ -1067,7 +1081,7 @@ def dailydialog_acts(rows: Any) -> dict[str, Any]:
 
 def verify_source(src: Source, split: str, rows: Any) -> dict[str, Any]:
     """Assert the label mapping of one loaded split; returns what was found (for the manifest)."""
-    name, where = src.name, f"{src.dataset} [{split}]"
+    name, where = S.MINED_SOURCES.get(src.name, src.name), f"{src.dataset} [{split}]"
     exact = hasattr(rows, "features") and split in src.train_splits  # real data, full split
     columns = getattr(rows, "column_names", None)
     if columns is not None:
@@ -1215,6 +1229,62 @@ def _revision(rows: Any) -> str | None:
     return None
 
 
+# -- mined negatives and held-out texts --------------------------------------------------
+
+_WORD = re.compile(r"[a-z0-9]+")
+
+
+def _words(text: Any) -> list[str]:
+    return _WORD.findall(str(text).lower())
+
+
+class TextGuard:
+    """Texts of held-out sets: `hit(text)` when a text repeats one or shares `n` consecutive words with one."""
+
+    def __init__(self, texts: Sequence[Any], n: int = S.GUARD_NGRAM) -> None:
+        self.n = n
+        self.exact: set[str] = set()
+        self.grams: set[tuple[str, ...]] = set()
+        for text in texts:
+            words = _words(text)
+            self.exact.add(" ".join(words))
+            self.grams.update(tuple(words[i : i + n]) for i in range(len(words) - n + 1))
+
+    def hit(self, text: Any) -> bool:
+        words = _words(text)
+        if " ".join(words) in self.exact:
+            return True
+        return any(tuple(words[i : i + self.n]) in self.grams for i in range(len(words) - self.n + 1))
+
+
+def read_mined(directory: str | Path, names: Sequence[str]) -> dict[str, dict[str, list[str]]]:
+    """`<directory>/<source>.jsonl` as written by `davout train mine-negatives`: row id -> wrong labels, best first."""
+    out: dict[str, dict[str, list[str]]] = {}
+    for name in names:
+        path = Path(directory) / f"{name}.jsonl"
+        if not path.is_file():
+            raise ValueError(f"{path} not found; run `davout train mine-negatives` first")
+        with path.open(encoding="utf-8") as f:
+            out[name] = {r["id"]: r["wrong"] for r in map(json.loads, f)}
+    return out
+
+
+def balanced_quotas(available: Mapping[Any, int], n: int) -> dict[Any, int]:
+    """`n` examples spread evenly over the classes, none above what is available (water-filling)."""
+    quotas = dict.fromkeys(available, 0)
+    left = min(n, sum(available.values()))
+    while left > 0:
+        open_ = sorted((c for c in available if quotas[c] < available[c]), key=str)
+        share = max(1, left // len(open_))
+        for c in open_:
+            add = min(share, available[c] - quotas[c], left)
+            quotas[c] += add
+            left -= add
+            if left == 0:
+                break
+    return quotas
+
+
 # -- build ------------------------------------------------------------------------------
 
 
@@ -1250,6 +1320,8 @@ class _Build:
         self.meta: dict[str, dict[str, Counter[str]]] = defaultdict(lambda: defaultdict(Counter))
         self.uids: dict[str, set[str]] = defaultdict(set)
         self.excluded_texts: dict[str, set[str]] = {}
+        self.mined: dict[str, dict[str, list[str]]] = {}  # source -> row id -> wrong labels, best first
+        self.guard: TextGuard | None = None  # held-out texts the mined sources must not repeat
         self.instructions, self.yelp, _ = benchmark_texts()
 
     def pool(self, src: Source, split: str) -> _Pool:
@@ -1271,6 +1343,15 @@ class _Build:
         rng = random.Random(f"{self.seed}:{role}:{name}:{family}:{split}")
         xfer = role == "dev_xfer"
         quotas = class_quotas(name, family, n)
+        if name in self.mined and role == "train":  # as even over the intents as the rows left allow
+            free: Counter[str] = Counter()
+            for i in pool.order:
+                it = pool.item(i)
+                if i in pool.taken or i in pool.dead or isinstance(it, str) or f"{name}/{split}/{i}" not in self.mined[name]:
+                    continue
+                if self.guard is None or not self.guard.hit(it["text"]):
+                    free[it["cls"]] += 1
+            quotas = balanced_quotas(free, n)
         rate = positive_rate(name, family)
         need_pos = int(round(n * rate)) if rate is not None else 0
         need_neg = n - need_pos
@@ -1288,6 +1369,17 @@ class _Build:
                 drops[item] += 1
                 continue
             keys = item["keys"]
+            if name in self.mined:
+                if self.guard is not None and self.guard.hit(item["text"]):
+                    pool.dead[idx] = "held_out_text_overlap"
+                    drops["held_out_text_overlap"] += 1
+                    continue
+                wrong = self.mined[name].get(f"{name}/{split}/{idx}")
+                if wrong is None:
+                    pool.dead[idx] = "not_mined"
+                    drops["not_mined"] += 1
+                    continue
+                item = {**item, "mined": wrong}
             if xfer and any(k in self.excluded_texts.get(name, ()) for k in keys):
                 pool.dead[idx] = "text_in_training_corpus"
                 drops["text_in_training_corpus"] += 1
@@ -1425,6 +1517,8 @@ def build(
     sources: Sequence[str] | None = None,
     *,
     recipe: str = "v1",
+    negatives: str | Path | None = None,
+    extra: str | Path | None = None,
     loader: Callable[[Source, str], Any] | None = None,
     token_counter: Callable[[str], int] | None = None,
 ) -> dict:
@@ -1435,7 +1529,10 @@ def build(
     registry entries (training and dev_xfer sources alike). `recipe` names the training mix
     (`S.RECIPES`): "v1" is the 96,000-row spec, "cand_v1" the 20,000-row candidate-stage
     experiment and "cand_mix_v1" those rows plus 20,000 of the "v1" mix; the dev_xfer of
-    every recipe is the one of "v1". `loader(source, split)` replaces
+    every recipe is the one of "v1". "intent_hn_v1" needs `negatives`, the directory written
+    by `davout train mine-negatives`. "teacher_intent_v1" needs `extra`, a directory with the
+    finished rows `train.jsonl` and `dev_in.jsonl` of `davout.train.synth.soft_rows`; they pass
+    the per-row guards and the length limit and are then mixed into the train and dev_in sets. `loader(source, split)` replaces
     the Hugging Face loader and `token_counter(prompt_text)` the HRM tokenizer; both exist
     for tests.
     """
@@ -1452,6 +1549,14 @@ def build(
     check_registry()
     counter = _FnCounter(token_counter) if token_counter is not None else _default_counter()
     b = _Build(seed, scale, loader or hf_loader, counter)
+    if (recipe in S.EXTRA_ROW_RECIPES) != (extra is not None):
+        raise ValueError(f"recipe {recipe!r} {'needs' if extra is None else 'does not take'} `extra` rows")
+    mined_names = [n for n in registry if n in S.MINED_SOURCES and n in selected]
+    if mined_names:
+        if negatives is None:
+            raise ValueError(f"recipe {recipe!r} needs `negatives`: the directory written by `davout train mine-negatives`")
+        b.mined = read_mined(negatives, mined_names)
+        b.guard = TextGuard([t for src in S.GUARD_TEXTS for split in src.train_splits for t in _column(b.loader(src, split), "text")])
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     deviations: list[str] = []
@@ -1523,6 +1628,23 @@ def build(
         for family, n in counts[name].items():
             for split, share in _split_proportional(_scaled(n, scale), dict.fromkeys(src.train_splits, 1.0)).items():
                 b.collect("train", src, family, split, share, train)
+    extra_stats: dict[str, Any] = {}
+    if extra is not None:
+        for name, rows_ in (("train", train), ("dev_in", dev)):
+            kept: Counter[str] = Counter()
+            for line in (Path(extra) / f"{name}.jsonl").read_text(encoding="utf-8").splitlines():
+                row = json.loads(line)
+                _require(row["source"] not in registry and row["family"] == "choice", f"{row['id']}: not an extra choice row")
+                text = render(row).text
+                check_example(row, text, b.instructions, b.yelp)
+                tokens = b.counter(text)
+                if b.counter.has_control_text(text) or tokens > MAX_TOKENS:
+                    b.dropped[name][row["source"]]["over_512_tokens_or_control_text"] += 1
+                    continue
+                b.lengths[name].append(("choice", len(text), tokens))
+                kept[row["source"]] += 1
+                rows_.append(row)
+            extra_stats[name] = dict(kept)
     random.Random(f"{seed}:train-order").shuffle(train)
 
     # Final guards over the finished sets.
@@ -1598,5 +1720,7 @@ def build(
     }
     if recipe != "v1":
         manifest = {"recipe": recipe, **manifest}
+    if extra is not None:
+        manifest["extra_rows"] = extra_stats
     (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return manifest

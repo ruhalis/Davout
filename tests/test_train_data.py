@@ -101,6 +101,13 @@ def _fake_row(name: str, split: str, i: int) -> dict[str, Any]:
         return {"relation": raw, "tokens": ["Alpha", str(i), "of", split, "is", "linked", "to", "Beta", "City", "."],
                 "head": {"text": "alpha", "type": "Q1", "indices": [[0, 1]]},
                 "tail": {"text": "beta city", "type": "Q2", "indices": [[7, 8]]}, "names": [relation, "described"]}  # fmt: skip
+    if name in ("clinc_hn", "massive_hn"):
+        row = _fake_row(S.MINED_SOURCES[name], split, i)
+        if name == "clinc_hn" and i % 50 == 7:
+            row["text"] = "i need to know how i can activate the card that arrived today"  # a held-out text
+        return row
+    if name == "banking77":
+        return {"text": "I need to know how I can activate the card that arrived today!", "label": i % 77}
     raise AssertionError(name)
 
 
@@ -772,6 +779,66 @@ def test_candidate_mix_recipe_adds_default_rows_in_proportion(tmp_path: Path) ->
     assert len({r["source"] for r in rows[:100]}) >= 6  # shuffled across both parts
     for name in ("dev_in.jsonl", "dev_xfer.jsonl"):
         assert (tmp_path / "mix" / name).read_bytes() == (tmp_path / "cand" / name).read_bytes()
+
+
+class _RankBackend:
+    """Candidate stage that prefers labels in label order: logit of Yes falls with the prompt's position."""
+
+    max_labels = 26
+
+    def __init__(self) -> None:
+        self.prompts: list[Any] = []
+
+    def read(self, prompts: Any) -> list[Any]:
+        from davout.backends.base import Readout
+
+        self.prompts += prompts
+        return [Readout([-float(len(p.suffix)), 0.0], 5) for p in prompts]
+
+
+def test_mined_recipe_builds_balanced_shortlists_from_the_mined_ranking(tmp_path: Path, built: tuple[Path, dict]) -> None:
+    from davout.train.mine import KEEP, mine
+
+    backend = _RankBackend()
+    stats = mine(tmp_path / "neg", backend, loader=fake_loader)
+    assert set(stats) == {"clinc_hn", "massive_hn"} and stats["massive_hn"]["rows"] == 600
+    assert stats["clinc_hn"]["rows"] < 600  # banking intents and out-of-scope rows are never mined
+    assert "Proposed answer: " in backend.prompts[0].suffix and backend.prompts[0].n_labels == 2
+    mined = data.read_mined(tmp_path / "neg", ["clinc_hn", "massive_hn"])
+    assert all(len(w) == KEEP for w in mined["massive_hn"].values())
+
+    with pytest.raises(ValueError, match="negatives"):
+        run_build(tmp_path / "none", recipe="intent_hn_v1")
+    manifest = run_build(tmp_path / "hn", scale=0.02, recipe="intent_hn_v1", negatives=tmp_path / "neg")
+    rows = read(tmp_path / "hn" / "train.jsonl")
+    new = [r for r in rows if r["source"] in S.MINED_SOURCES]
+    assert Counter(r["source"] for r in new) == {"clinc_hn": 201, "massive_hn": 201} and manifest["shortfall"] == {}
+    assert abs(len(rows) - len(new) - 400) <= 10  # each default-mix cell is rounded at this scale
+    by_raw = {"clinc_hn": S.CLINC.by_raw(), "massive_hn": S.MASSIVE_INTENT.by_raw()}
+    for r in new:
+        names = [n.lower().replace("_", " ") for n in r["question"]["criteria"]]
+        assert r["family"] == "choice" and len(names) == 10
+        wrong = [by_raw[r["source"]][raw].name for raw in mined[r["source"]][r["id"]][:9]]
+        assert sorted(names) == sorted(wrong + [names[r["label"]]]) and names[r["label"]] not in wrong
+    assert len({r["label"] for r in new}) == 10  # the gold option moves around
+    per_intent = Counter(r["question"]["criteria"] and list(r["question"]["criteria"])[r["label"]].lower().replace("_", " ")
+                         for r in new if r["source"] == "massive_hn")  # fmt: skip
+    assert len(per_intent) == 60 and max(per_intent.values()) - min(per_intent.values()) <= 1
+    # held-out texts are dropped, and dev_xfer stays the default one
+    assert manifest["dropped"]["train"]["clinc_hn"]["held_out_text_overlap"] > 0
+    assert not any("activate the card" in json.dumps(r["state"]) for r in rows + read(tmp_path / "hn" / "dev_in.jsonl"))
+    assert {r["source"] for r in read(tmp_path / "hn" / "dev_in.jsonl")} == set(S.MINED_SOURCES)
+    assert (tmp_path / "hn" / "dev_xfer.jsonl").read_bytes() == (built[0] / "dev_xfer.jsonl").read_bytes()
+    assert not set(S.MINED_SOURCES) & set(S.SOURCES)
+
+
+def test_text_guard_and_balanced_quotas() -> None:
+    guard = data.TextGuard(["Why was my top-up reverted after I added money to the account yesterday?"])
+    assert guard.hit("why was my top up reverted after i added money to the account yesterday")
+    assert guard.hit("hello, my top up reverted after I added money to it")  # eight shared words
+    assert not guard.hit("my top up reverted after I added cash")
+    assert data.balanced_quotas({"a": 2, "b": 50, "c": 50}, 30) == {"a": 2, "b": 14, "c": 14}
+    assert sum(data.balanced_quotas({"a": 3, "b": 4}, 100).values()) == 7
 
 
 def test_build_rejects_bad_arguments(tmp_path: Path) -> None:

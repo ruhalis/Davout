@@ -38,7 +38,7 @@ import torch.nn.functional as F
 from davout import metrics
 from davout.backends.base import LETTERS
 from davout.backends.hrm import MODEL_ID, HrmBackend, _pick_device
-from davout.train.format import BINARY_FAMILIES, Item, chunks, collate, micro_batches, pack, read_rows, render, tokenize
+from davout.train.format import BINARY_FAMILIES, Item, chunks, collate, micro_batches, pack, read_rows, render, soft_targets, tokenize
 
 N_LETTERS = len(LETTERS)
 DEV_SETS = ("dev_in", "dev_xfer")
@@ -79,6 +79,7 @@ class TrainConfig:
     gate_step: int = 250  # abort if dev_xfer NLL at this evaluation exceeds base + gate_margin
     gate_margin: float = 0.02
     sanity_tol: float = 0.01  # the saved model must reproduce the in-loop dev NLL within this
+    early_stop: bool = True  # stop when dev_xfer NLL rises at two consecutive evaluations
 
     def __post_init__(self) -> None:
         self.betas = (float(self.betas[0]), float(self.betas[1]))
@@ -149,6 +150,26 @@ def rce(logits: Any, n_opt: Any, y: Any) -> Any:
     return F.cross_entropy(logits.masked_fill(invalid, float("-inf")), y, reduction="none")
 
 
+def soft_ce(logits: Any, n_opt: Any, target: Any) -> Any:
+    """Per-row cross-entropy against a distribution over the first `n_opt` letters.
+
+    The log-softmax runs over the valid letters only; the masked letters (log-probability
+    -inf, target 0) are zeroed before the product so they cannot turn the sum into NaN.
+    """
+    invalid = torch.arange(logits.shape[-1], device=logits.device)[None, :] >= n_opt[:, None]
+    logp = F.log_softmax(logits.masked_fill(invalid, float("-inf")), dim=-1)
+    return -(target * logp.masked_fill(invalid, 0.0)).sum(-1)
+
+
+def row_loss(logits: Any, n_opt: Any, y: Any, soft: tuple[Any, Any] | None) -> Any:
+    """Per-row loss: `rce` on the label, replaced by `soft_ce` on rows that carry a soft target."""
+    hard = rce(logits, n_opt, y)
+    if soft is None:
+        return hard
+    target, is_soft = soft
+    return torch.where(is_soft, soft_ce(logits, n_opt, target), hard)
+
+
 def train_step(
     model: Any, opt: Any, params: list[Any], chunk: Sequence[Item], cfg: TrainConfig, letter_ids: Any, pad_id: int
 ) -> dict[str, Any]:
@@ -161,9 +182,10 @@ def train_step(
     for mb in batches:
         ids, mask, n_opt, y = collate(mb, pad_id, device)
         logits = forward_cycles(model, ids, mask, letter_ids)
-        loss_final = rce(logits[-1], n_opt, y).sum()
+        soft = soft_targets(mb, N_LETTERS, device)
+        loss_final = row_loss(logits[-1], n_opt, y, soft).sum()
         if cfg.aux_weight > 0:
-            loss_first = rce(logits[0], n_opt, y).sum()
+            loss_first = row_loss(logits[0], n_opt, y, soft).sum()
             loss = (loss_final + cfg.aux_weight * loss_first) / len(chunk)
         else:
             loss_first = rce(logits[0].detach(), n_opt, y).sum()  # logged only
@@ -622,7 +644,7 @@ def train(cfg: TrainConfig) -> dict[str, Any]:
                     }
                     _save(best_path, {"model": model.state_dict(), "step": step})
                 aborted, early = rules.on_eval(step, nll)
-                if early is not None:
+                if early is not None and cfg.early_stop:
                     state["stop"] = early
                 # fp32 weights + optimizer moments + trainer state, so a resumed run continues exactly
                 _save(

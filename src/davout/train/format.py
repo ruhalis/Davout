@@ -5,7 +5,8 @@ A data directory holds `train.jsonl`, `dev_in.jsonl` and `dev_xfer.jsonl`. Each 
     {"id": str, "source": str, "family": "nli"|"reading"|"judgement"|"ovr"|"candidate"|"choice"|"score",
      "state": <string | object>, "question": {"type", "instructions", "criteria"}, "label": int}
 
-plus `"candidate": "<option name>"` on candidate rows. Labels: noul 1 = true, 0 = false;
+plus `"candidate": "<option name>"` on candidate rows and, optionally, `"target": [p, ...]`, a
+distribution over the options that replaces the one-hot label in the training loss. Labels: noul 1 = true, 0 = false;
 choice the gold option index; score the level index; candidate rows are choice questions
 with label 1 = the proposed option is correct.
 
@@ -30,7 +31,7 @@ NOUL_FAMILIES = ("nli", "reading", "judgement", "ovr")
 BINARY_FAMILIES = NOUL_FAMILIES + ("candidate",)  # Yes/No prompts: AUROC applies
 FAMILIES = BINARY_FAMILIES + ("choice", "score")
 _FAMILY_TYPE = {**{f: "noul" for f in NOUL_FAMILIES}, "candidate": "choice", "choice": "choice", "score": "score"}
-_KEYS = {"id", "source", "family", "state", "question", "label", "candidate"}
+_KEYS = {"id", "source", "family", "state", "question", "label", "candidate", "target"}
 _ENCODE_CHUNK = 512
 
 
@@ -45,6 +46,7 @@ class Row:
     question: Question
     label: int
     candidate: str | None = None
+    target: tuple[float, ...] | None = None  # soft training target over the options; None = one-hot `label`
 
 
 @dataclass(frozen=True)
@@ -93,7 +95,16 @@ def _parse_row(obj: Any) -> Row:
     elif "candidate" in obj:
         raise ValueError("candidate only applies to rows of family 'candidate'")
     row = Row(obj["id"], obj["source"], family, obj["state"], question, label, candidate)
-    target(row)  # validates the label range
+    _y, n_opt = target(row)  # validates the label range
+    soft = obj.get("target")
+    if soft is not None:
+        ok = isinstance(soft, list) and len(soft) == n_opt and all(isinstance(p, (int, float)) and not isinstance(p, bool) for p in soft)
+        if not ok or min(soft) < 0 or abs(sum(soft) - 1.0) > 1e-3:
+            raise ValueError(f"target must be {n_opt} non-negative numbers that sum to 1")
+        if family in BINARY_FAMILIES:
+            raise ValueError("target only applies to choice and score rows")
+        total = float(sum(soft))
+        row = Row(row.id, row.source, family, row.state, question, label, candidate, tuple(float(p) / total for p in soft))
     return row
 
 
@@ -176,6 +187,28 @@ def tokenize(rows: Sequence[Row], backend: Any) -> tuple[list[Item], list[str]]:
                 raise ValueError(f"row {row.id!r}: target {y} does not fit {prompt.n_labels} options")
             items.append(Item(row, np.asarray(ids, dtype=np.int32), n_opt, y))
     return items, dropped
+
+
+def soft_targets(items: Sequence[Item], n_letters: int, device: Any = None) -> tuple[Any, Any] | None:
+    """(`target` [rows, n_letters], `is_soft` [rows]) for a batch, or None when no row has a soft target.
+
+    Rows without one get their one-hot label; letters past a row's options stay 0.
+    """
+    if all(it.row.target is None for it in items):
+        return None
+    import torch
+
+    target = torch.zeros((len(items), n_letters), dtype=torch.float32)
+    is_soft = torch.zeros(len(items), dtype=torch.bool)
+    for r, it in enumerate(items):
+        if it.row.target is None:
+            target[r, it.y] = 1.0
+        else:
+            target[r, : it.n_opt] = torch.tensor(it.row.target, dtype=torch.float32)
+            is_soft[r] = True
+    if device is not None:
+        target, is_soft = target.to(device), is_soft.to(device)
+    return target, is_soft
 
 
 def chunks(items: Sequence[Item], k: int) -> Iterator[Sequence[Item]]:
